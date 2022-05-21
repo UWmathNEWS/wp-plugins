@@ -1,0 +1,10 @@
+== 1.0.0 ==
+
+First release, containing:
+
+- Specialized submission flow for contributors, including custom subtitle, author, and postscript fields
+- Automated article tagging
+- Streamlined approve/reject functionality for copyeditors
+- Category restrictions for editors and above only
+- Article locking for submitted/approved articles
+- One-click image embeds for contributors

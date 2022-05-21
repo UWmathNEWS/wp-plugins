@@ -1,0 +1,61 @@
+/* Manual formatting fixes for the meta box */
+#poststuff #mn-submitdiv .inside {
+	margin: 0;
+	padding: 0;
+}
+
+/* Don't show status dropdown for contributors */
+.inline-edit-col-right .inline-edit-status {
+	display: none !important;
+}
+.inline-edit-categories + .inline-edit-col-right .inline-edit-status {
+	display: block !important;
+}
+
+/* Give notification dialogs some room to breathe */
+.notification-dialog-wrap .notification-dialog-content {
+	margin: 25px;
+}
+
+/* The submit for review button takes up too much room and causes everything to go into two lines.
+ * This helps it take up slightly less room. */
+#publishing-action .spinner {
+	margin-left: 0;
+}
+
+/* Fix the width of the subtitle field */
+input#mn-subtitle {
+	width: 100%;
+}
+
+/* Centre the label for the pseudonym field */
+#mn-authorwrap {
+	display: flex;
+	align-items: center;
+	margin-bottom: 10px;
+}
+
+/* Give the pseudonym field a reasonable width */
+input#mn-author {
+	flex: 1;
+	min-width: 150px;
+	text-align: left;
+	margin-left: 10px;
+}
+
+/* Make delete button red */
+.submitbox .button.submitdelete,
+.submitbox .button.submitdelete:hover {
+	color: #b32d2e;
+	border: 1px solid #b32d2e;
+}
+
+/* Give the delete/reject button some room to breathe */
+#delete-action {
+	margin-bottom: 5px;
+}
+
+/* Don't give the impression that the meta boxes under the editor are sortable */
+#normal-sortables .hndle {
+	cursor: pointer;
+}
