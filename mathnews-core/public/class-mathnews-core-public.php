@@ -10,7 +10,7 @@
  * @subpackage Mathnews_Core/public
  */
 
-namespace Ca\Mathnews\WP\Core\Public_;
+namespace Mathnews\WP\Core\Public_;
 
 /**
  * The public-facing functionality of the plugin.

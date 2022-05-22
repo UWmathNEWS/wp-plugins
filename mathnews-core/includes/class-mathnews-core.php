@@ -9,11 +9,10 @@
  * @link       All licensing queries should be directed to mathnews@gmail.com
  * @since      1.0.0
  *
- * @package    Mathnews_Core
- * @subpackage Mathnews_Core/includes
+ * @package    Mathnews\WP\Core
  */
 
-namespace Ca\Mathnews\WP\Core;
+namespace Mathnews\WP\Core;
 
 /**
  * The core plugin class.
@@ -25,8 +24,7 @@ namespace Ca\Mathnews\WP\Core;
  * version of the plugin.
  *
  * @since      1.0.0
- * @package    Mathnews_Core
- * @subpackage Mathnews_Core/includes
+ * @package    Mathnews\WP\Core
  * @author     mathNEWS Editors <mathnews@gmail.com>
  */
 class Mathnews_Core {
@@ -37,7 +35,7 @@ class Mathnews_Core {
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      Mathnews_Core_Loader    $loader    Maintains and registers all hooks for the plugin.
+	 * @var      Loader    $loader    Maintains and registers all hooks for the plugin.
 	 */
 	protected $loader;
 
@@ -124,7 +122,7 @@ class Mathnews_Core {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-mathnews-core-public.php';
 
-		$this->loader = new Mathnews_Core_Loader();
+		$this->loader = new Loader();
 
 	}
 
@@ -139,7 +137,7 @@ class Mathnews_Core {
 	 */
 	private function set_locale() {
 
-		$plugin_i18n = new Mathnews_Core_i18n();
+		$plugin_i18n = new i18n();
 
 		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
 

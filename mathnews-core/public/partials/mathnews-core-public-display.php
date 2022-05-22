@@ -12,7 +12,7 @@
  * @subpackage Mathnews_Core/public/partials
  */
 
-namespace Ca\Mathnews\WP\Core\Public_\Partials;
+namespace Mathnews\WP\Core\Public_\Partials;
 
 ?>
 

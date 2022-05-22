@@ -9,11 +9,10 @@
  * @link       All licensing queries should be directed to mathnews@gmail.com
  * @since      1.0.0
  *
- * @package    Mathnews_Core
- * @subpackage Mathnews_Core/includes
+ * @package    Mathnews\WP\Core
  */
 
-namespace Ca\Mathnews\WP\Core;
+namespace Mathnews\WP\Core;
 
 /**
  * Define the internationalization functionality.
@@ -22,11 +21,10 @@ namespace Ca\Mathnews\WP\Core;
  * so that it is ready for translation.
  *
  * @since      1.0.0
- * @package    Mathnews_Core
- * @subpackage Mathnews_Core/includes
+ * @package    Mathnews\WP\Core
  * @author     mathNEWS Editors <mathnews@gmail.com>
  */
-class Mathnews_Core_i18n {
+class i18n {
 
 
 	/**
@@ -37,7 +35,7 @@ class Mathnews_Core_i18n {
 	public function load_plugin_textdomain() {
 
 		load_plugin_textdomain(
-			'mathnews-core',
+			'mathnews',
 			false,
 			dirname( dirname( plugin_basename( __FILE__ ) ) ) . '/languages/'
 		);

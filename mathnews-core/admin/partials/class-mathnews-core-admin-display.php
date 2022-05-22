@@ -12,9 +12,9 @@
  * @subpackage Mathnews_Core/admin/partials
  */
 
-namespace Ca\Mathnews\WP\Core\Admin\Partials;
+namespace Mathnews\WP\Core\Admin\Partials;
 
-use Ca\Mathnews\WP\Core\Consts;
+use Mathnews\WP\Core\Consts;
 
 class Display {
 	/**

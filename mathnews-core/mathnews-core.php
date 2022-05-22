@@ -10,22 +10,22 @@
  *
  * @link              All licensing queries should be directed to mathnews@gmail.com
  * @since             1.0.0
- * @package           Mathnews_Core
+ * @package           Mathnews\WP\Core
  *
  * @wordpress-plugin
  * Plugin Name:       mathNEWS Core
  * Plugin URI:        mathnews.uwaterloo.ca
- * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
+ * Description:       Revamp article submission workflow
  * Version:           1.0.0
  * Author:            mathNEWS Editors
  * Author URI:        All licensing queries should be directed to mathnews@gmail.com
- * License:           GPL-2.0+
- * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
+ * License:           AGPL-3.0
+ * License URI:       https://www.gnu.org/licenses/agpl-3.0.en.html
  * Text Domain:       mathnews-core
  * Domain Path:       /languages
  */
 
-namespace Ca\Mathnews\WP\Core;
+namespace Mathnews\WP\Core;
 
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
@@ -39,7 +39,9 @@ if ( ! defined( 'WPINC' ) ) {
  */
 define( 'MATHNEWS_CORE_VERSION', '1.0.0' );
 
-require_once plugin_dir_path(__FILE__) . 'mathnews-core-consts.php';
+require_once plugin_dir_path(__FILE__) . 'load.php';
+load_consts();
+load_utils();
 
 /**
  * The code that runs during plugin activation.
@@ -47,7 +49,7 @@ require_once plugin_dir_path(__FILE__) . 'mathnews-core-consts.php';
  */
 function activate_mathnews_core() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-mathnews-core-activator.php';
-	Mathnews_Core_Activator::activate();
+	Activator::activate();
 }
 
 /**
@@ -56,11 +58,11 @@ function activate_mathnews_core() {
  */
 function deactivate_mathnews_core() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-mathnews-core-deactivator.php';
-	Mathnews_Core_Deactivator::deactivate();
+	Deactivator::deactivate();
 }
 
-register_activation_hook( __FILE__, 'activate_mathnews_core' );
-register_deactivation_hook( __FILE__, 'deactivate_mathnews_core' );
+register_activation_hook( __FILE__, __NAMESPACE__ . '\\activate_mathnews_core' );
+register_deactivation_hook( __FILE__, __NAMESPACE__ . '\\deactivate_mathnews_core' );
 
 /**
  * The core plugin class that is used to define internationalization,
@@ -78,6 +80,15 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-mathnews-core.php';
  * @since    1.0.0
  */
 function run_mathnews_core() {
+
+	add_action('plugins_loaded', function() {
+		/**
+		 * Allow dependent plugins to load
+		 *
+		 * @since 1.0.0
+		 */
+		do_action('mathnews-core:init', plugin_dir_path(__FILE__));
+	});
 
 	$plugin = new Mathnews_Core();
 	$plugin->run();

@@ -5,14 +5,15 @@
  * @link       All licensing queries should be directed to mathnews@gmail.com
  * @since      1.0.0
  *
- * @package    Mathnews_Core
- * @subpackage Mathnews_Core/admin
+ * @package    Mathnews\WP\Core
+ * @subpackage Mathnews\WP\Core\Admin
  */
 
-namespace Ca\Mathnews\WP\Core\Admin;
+namespace Mathnews\WP\Core\Admin;
 
-use Ca\Mathnews\WP\Core\Consts;
-use Ca\Mathnews\WP\Core\Admin\Partials\Display;
+use Mathnews\WP\Core\Consts;
+use Mathnews\WP\Core\Utils;
+use Mathnews\WP\Core\Admin\Partials\Display;
 
 /**
  * The admin-specific functionality of the plugin.
@@ -20,8 +21,8 @@ use Ca\Mathnews\WP\Core\Admin\Partials\Display;
  * Defines the plugin name, version, and two examples hooks for how to
  * enqueue the admin-specific stylesheet and JavaScript.
  *
- * @package    Mathnews_Core
- * @subpackage Mathnews_Core/admin
+ * @package    Mathnews\WP\Core
+ * @subpackage Mathnews\WP\Core\Admin
  * @author     mathNEWS Editors <mathnews@gmail.com>
  */
 class Mathnews_Core_Admin {
@@ -77,7 +78,7 @@ class Mathnews_Core_Admin {
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
 
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/mathnews-core-admin-display.php';
+		require_once plugin_dir_path( __FILE__ ) . 'partials/class-mathnews-core-admin-display.php';
 	}
 
 	/**
@@ -130,15 +131,6 @@ class Mathnews_Core_Admin {
 		if (!term_exists(Consts\BACKISSUE_CAT_NAME, 'category')) {
 			wp_create_category(Consts\BACKISSUE_CAT_NAME);
 		}
-	}
-
-	/**
-	 * Determine if a user can edit a given post
-	 *
-	 * @since 1.0.0
-	 */
-	private function can_edit($post) {
-		return current_user_can('edit_others_posts') || ($post->post_status !== 'pending' && !has_category(Consts\APPROVED_CAT_NAME, $post));
 	}
 
 	/**
@@ -270,7 +262,7 @@ class Mathnews_Core_Admin {
 	public function show_editor_lock_warning() {
 		global $post;
 
-		if ($this->can_edit($post)) {
+		if (Utils::can_edit($post)) {
 			return;
 		}
 
@@ -286,7 +278,7 @@ class Mathnews_Core_Admin {
 	public function lock_tinymce($mceInit) {
 		global $post;
 
-		if (!$this->can_edit($post)) {
+		if (!Utils::can_edit($post)) {
 			$mceInit['readonly'] = true;
 		}
 
@@ -312,7 +304,7 @@ class Mathnews_Core_Admin {
 	 * @since 1.0.0
 	 */
 	public function modify_post_row_actions($actions, $post) {
-		if (!$this->can_edit($post)) {
+		if (!Utils::can_edit($post)) {
 			unset($actions['inline hide-if-no-js']);
 			unset($actions['trash']);
 		}
@@ -596,7 +588,7 @@ class Mathnews_Core_Admin {
 	 */
 	public function render_publish_meta_box($post) {
 		$nonce_field = wp_nonce_field(basename(__FILE__), 'mn-submit-nonce', true, false);
-		Display::render_publish_meta_box($post, $nonce_field, $this->can_edit($post));
+		Display::render_publish_meta_box($post, $nonce_field, Utils::can_edit($post));
 	}
 
 	/**
@@ -609,7 +601,7 @@ class Mathnews_Core_Admin {
 
 		$subtitle = get_post_meta($post->ID, Consts\SUBTITLE_META_KEY_NAME, true);
 
-		Display::subtitle_input($subtitle, $this->can_edit($post));
+		Display::subtitle_input($subtitle, Utils::can_edit($post));
 	}
 
 	/**
@@ -670,7 +662,7 @@ class Mathnews_Core_Admin {
 	private function show_onboarding() {
 		global $post;
 
-		return $this->can_edit($post) && get_user_option(Consts\ONBOARDING_OPTION_KEY_NAME) !== $this->current_onboarding_value();
+		return Utils::can_edit($post) && get_user_option(Consts\ONBOARDING_OPTION_KEY_NAME) !== $this->current_onboarding_value();
 	}
 
 	/**

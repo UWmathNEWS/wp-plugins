@@ -3,7 +3,7 @@ Contributors: All licensing queries should be directed to mathnews@gmail.com
 Requires at least: 5.9.0
 Tested up to: 5.9.3
 Stable tag: 5.9.3
-License: GPLv2 or later
+License: AGPLv3
 License URI: https://www.gnu.org/licenses/agpl-3.0.en.html
 
 A plugin to reform the mathNEWS article submission flow.

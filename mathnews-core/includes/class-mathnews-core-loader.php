@@ -6,11 +6,10 @@
  * @link       All licensing queries should be directed to mathnews@gmail.com
  * @since      1.0.0
  *
- * @package    Mathnews_Core
- * @subpackage Mathnews_Core/includes
+ * @package    Mathnews\WP\Core
  */
 
-namespace Ca\Mathnews\WP\Core;
+namespace Mathnews\WP\Core;
 
 /**
  * Register all actions and filters for the plugin.
@@ -19,11 +18,10 @@ namespace Ca\Mathnews\WP\Core;
  * the plugin, and register them with the WordPress API. Call the
  * run function to execute the list of actions and filters.
  *
- * @package    Mathnews_Core
- * @subpackage Mathnews_Core/includes
+ * @package    Mathnews\WP\Core
  * @author     mathNEWS Editors <mathnews@gmail.com>
  */
-class Mathnews_Core_Loader {
+class Loader {
 
 	/**
 	 * The array of actions registered with WordPress.

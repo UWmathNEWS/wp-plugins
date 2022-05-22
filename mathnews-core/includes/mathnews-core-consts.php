@@ -10,7 +10,7 @@
  * @subpackage Mathnews_Core/includes
  */
 
- namespace Ca\Mathnews\WP\Core\Consts;
+ namespace Mathnews\WP\Core\Consts;
 
 /**
  * Article post type for publishing

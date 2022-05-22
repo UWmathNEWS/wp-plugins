@@ -6,11 +6,10 @@
  * @link       All licensing queries should be directed to mathnews@gmail.com
  * @since      1.0.0
  *
- * @package    Mathnews_Core
- * @subpackage Mathnews_Core/includes
+ * @package    Mathnews\WP\Core
  */
 
-namespace Ca\Mathnews\WP\Core;
+namespace Mathnews\WP\Core;
 
 /**
  * Fired during plugin activation.
@@ -18,11 +17,10 @@ namespace Ca\Mathnews\WP\Core;
  * This class defines all code necessary to run during the plugin's activation.
  *
  * @since      1.0.0
- * @package    Mathnews_Core
- * @subpackage Mathnews_Core/includes
+ * @package    Mathnews\WP\Core
  * @author     mathNEWS Editors <mathnews@gmail.com>
  */
-class Mathnews_Core_Activator {
+class Activator {
 
 	/**
 	 * Short Description. (use period)
