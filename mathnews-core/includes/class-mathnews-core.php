@@ -191,11 +191,6 @@ class Mathnews_Core {
 		$this->loader->add_filter('quick_edit_show_taxonomy', $plugin_admin, 'remove_categories_from_quickedit', 10, 3);
 		$this->loader->add_filter('post_row_actions', $plugin_admin, 'modify_post_row_actions', 10, 2);
 
-		// onboarding
-		$this->loader->add_action('load-post.php', $plugin_admin, 'init_onboarding_scripts');
-		$this->loader->add_action('load-post-new.php', $plugin_admin, 'init_onboarding_scripts');
-		$this->loader->add_action('wp_ajax_mn_register_onboarding', $plugin_admin, 'mark_onboarding_completed');
-
 		// AB tests
 		$this->loader->add_filter('the_author', $plugin_admin, 'filter_author_AB');
 		$this->loader->add_action('admin_notices', $plugin_admin, 'feedback_notice');

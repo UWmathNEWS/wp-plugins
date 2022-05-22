@@ -28,15 +28,10 @@ Some of the problems it has solved:
 - Changes being made after approval, resulting in the need to review the new changes as well
 - Editors accidentally publishing articles when trying to approve them
 
-== Installation ==
+== Development ==
 
-This section describes how to install the plugin and get it working.
-
-e.g.
-
-1. Upload `mathnews-core.php` to the `/wp-content/plugins/` directory
-1. Activate the plugin through the 'Plugins' menu in WordPress
-1. Place `<?php do_action('plugin_name_hook'); ?>` in your templates
+If there are major breaking changes to the submission workflow, make sure you also update the mathNEWS Onboarding plugin. Instructions
+for releasing a new version of the onboarding plugin can be found in its repository.
 
 == Frequently Asked Questions ==
 
