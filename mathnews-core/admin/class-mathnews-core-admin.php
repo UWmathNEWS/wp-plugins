@@ -51,7 +51,7 @@ class Mathnews_Core_Admin {
 	 * @since 1.0.0
 	 * @access public
 	 */
-	const AB_TESTS_ENABLED = true;
+	const AB_TESTS_ENABLED = false;
 
 	/**
 	 * Determine if AB test is on for this user. Returns true if plugin should be enabled for user.
@@ -59,11 +59,11 @@ class Mathnews_Core_Admin {
 	 * @since 1.0.0
 	 */
 	static public function is_B_user($user_id) {
-		return !self::AB_TESTS_ENABLED || user_can($user_id, 'edit_others_posts') || ($user_id % 2 === 0);
+		return self::AB_TESTS_ENABLED && (user_can($user_id, 'edit_others_posts') || ($user_id % 2 === 0));
 	}
 
 	static public function is_B() {
-		return !self::AB_TESTS_ENABLED || self::is_B_user(get_current_user_id());
+		return self::is_B_user(get_current_user_id());
 	}
 
 	/**
@@ -87,10 +87,7 @@ class Mathnews_Core_Admin {
 	 * @since    1.0.0
 	 */
 	public function enqueue_styles() {
-		if (!self::is_B()) { return; }
-
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/mathnews-core-admin.css', array(), $this->version, 'all' );
-
 	}
 
 	/**
@@ -99,8 +96,6 @@ class Mathnews_Core_Admin {
 	 * @since    1.0.0
 	 */
 	public function enqueue_scripts() {
-		if (!self::is_B()) { return; }
-
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/mathnews-core-admin.js',
 			['jquery', 'wp-tinymce', 'media-upload', 'tags-box'], $this->version, true );
 		wp_localize_script($this->plugin_name, 'mn_core', [
@@ -113,7 +108,6 @@ class Mathnews_Core_Admin {
 				'BACKISSUE_CAT_NAME' => get_cat_ID(Consts\BACKISSUE_CAT_NAME),
 			],
 		]);
-
 	}
 
 	/**
@@ -517,8 +511,6 @@ class Mathnews_Core_Admin {
 	 * @since 1.0.0
 	 */
 	public function meta_box_setup() {
-		if (!self::is_B()) { return; }
-
 		add_action('add_meta_boxes', array($this, 'create_publish_meta_boxes'));
 		add_action('add_meta_boxes', array($this, 'remove_extraneous_meta_boxes'));
 		add_action('add_meta_boxes', array($this, 'remove_categories_meta_box'));
@@ -597,8 +589,6 @@ class Mathnews_Core_Admin {
 	 * @since 1.0.0
 	 */
 	public function add_subtitle_input($post) {
-		if (!self::is_B()) { return; }
-
 		$subtitle = get_post_meta($post->ID, Consts\SUBTITLE_META_KEY_NAME, true);
 
 		Display::subtitle_input($subtitle, Utils::can_edit($post));

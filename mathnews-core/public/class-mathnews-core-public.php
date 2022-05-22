@@ -59,6 +59,8 @@ class Mathnews_Core_Public {
 	/**
 	 * Register the stylesheets for the public-facing side of the site.
 	 *
+	 * Unused since there are no public-facing elements (yet)
+	 *
 	 * @since    1.0.0
 	 */
 	public function enqueue_styles() {
@@ -81,6 +83,8 @@ class Mathnews_Core_Public {
 
 	/**
 	 * Register the JavaScript for the public-facing side of the site.
+	 *
+	 * Unused since there are no public-facing elements (yet)
 	 *
 	 * @since    1.0.0
 	 */
