@@ -19,7 +19,7 @@ Some of the problems it has solved:
 - Changes being made after approval, resulting in the need to review the new changes as well
 - Editors accidentally publishing articles when trying to approve them
 
-This project is currently developed as a monorepo, with each plugin occupying its own directory. Currently, only one plugin is in development, mathNEWS Core.
+This project is currently developed as a monorepo, with each plugin occupying its own directory. Currently, two plugins are in development, mathNEWS Core and mathNEWS Onboarding.
 
 ## Installation
 
@@ -27,4 +27,9 @@ See installation instructions for each individual plugin.
 
 ## Development
 
-As you would a regular repo. This may change as plugins become more coupled.
+See development instructions for each individual plugin.
+
+## Licensing
+
+See licensing information for each individual plugin.
+
