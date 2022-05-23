@@ -5,3 +5,15 @@
 .shepherd-text p {
 	font-size: inherit;
 }
+
+.shepherd-footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.shepherd-footer .shepherd-progress {
+	flex: 1;
+	font-size: .8rem;
+}
+

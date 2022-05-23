@@ -13,12 +13,23 @@
 		text: 'Next',
 	};
 
+	const renderTourProgress = () => {
+		const activeTour = Shepherd.activeTour;
+		const currentStepElement = activeTour.getCurrentStep().getElement();
+		const footer = currentStepElement.querySelector('.shepherd-footer');
+		const progress = document.createElement('span');
+		progress.className = 'shepherd-progress';
+		progress.innerText = `${activeTour.steps.indexOf(activeTour.getCurrentStep()) + 1} of ${activeTour.steps.length}`;
+		footer.prepend(progress);
+	};
+
 	const tour = new Shepherd.Tour({
 		confirmCancel: true,
 		confirmCancelMessage: `Are you sure you want to exit the tour? It's pretty important.`,
 		defaultStepOptions: {
 			cancelIcon: { enabled: false },
 			buttons: [ backButton, nextButton ],
+			scrollTo: { behavior: 'smooth', block: 'center' },
 			popperOptions: {
 				modifiers: [
 					{
@@ -29,6 +40,9 @@
 					},
 				],
 			},
+			when: {
+				show: renderTourProgress,
+			}
 		},
 		exitOnEsc: false,
 		useModalOverlay: true,
@@ -49,6 +63,18 @@
 			}
 		],
 	});
+
+	// Show main writing area if it's a new article
+	if (location.pathname.endsWith('post-new.php')) {
+		tour.addStep({
+			id: 'content',
+			text: `<p>Here's where you write. Give us a title and an article, and we'll (probably) publish it.</p>`,
+			attachTo: {
+				element: '#post-body-content',
+				on: 'auto',
+			},
+		});
+	}
 
 	// Show the subtitle
 	tour.addStep({
@@ -81,7 +107,6 @@ We advise you to use it sparingly, as too long a postscript can make an article 
 			element: '#mn-postscriptdiv',
 			on: 'auto',
 		},
-		scrollTo: { behavior: 'smooth', block: 'center' },
 		beforeShowPromise() {
 			return new Promise((resolve) => {
 				$('#mn-postscriptdiv').removeClass('closed');
@@ -89,6 +114,7 @@ We advise you to use it sparingly, as too long a postscript can make an article 
 			});
 		},
 		when: {
+			show: renderTourProgress,
 			hide() {
 				$('#mn-postscriptdiv').addClass('closed');
 			},
@@ -104,7 +130,6 @@ Write the tag in the format <code>v[volume]i[issue]</code>, e.g. <code>${mn_core
 			element: '#tagsdiv-post_tag',
 			on: 'auto',
 		},
-		scrollTo: { behavior: 'smooth', block: 'center' },
 	});
 
 	if (mn_core.isAdmin) {
@@ -118,10 +143,10 @@ Make sure to update this before every prod night.</p>`,
 				on: 'auto',
 			},
 			canClickTarget: false,
-			scrollTo: { behavior: 'smooth', block: 'center' },
 			when: {
 				show() {
 					$('#menu-posts .wp-submenu a[href$="page=set-current-issue"]').parent().addClass('current');
+					renderTourProgress();
 				},
 				hide() {
 					$('#menu-posts .wp-submenu a[href$="page=set-current-issue"]').parent().removeClass('current');
@@ -140,7 +165,6 @@ To prevent s**t from happening to you, save your work frequently here.</p>`,
 			on: 'auto',
 		},
 		canClickTarget: false,
-		scrollTo: { behavior: 'smooth', block: 'center' },
 	});
 
 	if (mn_core.isCopyeditor) {
@@ -155,7 +179,6 @@ Just try not to use this for your own articles.</p>`,
 					on: 'bottom-start',
 				},
 				canClickTarget: false,
-				scrollTo: { behavior: 'smooth', block: 'center' },
 			});
 			tour.addStep({
 				id: 'reject',
@@ -166,7 +189,6 @@ Again, try not to let this power go to your head, because you <em>will</em> have
 					on: 'auto',
 				},
 				canClickTarget: false,
-				scrollTo: { behavior: 'smooth', block: 'center' },
 			});
 		} else {
 			// Own post, show the submit button
@@ -180,7 +202,6 @@ As their names suggest, these buttons allow you to reject and approve an article
 					on: 'bottom-start',
 				},
 				canClickTarget: false,
-				scrollTo: { behavior: 'smooth', block: 'center' },
 			});
 		}
 	} else {
@@ -195,7 +216,6 @@ Make sure the issue listed is the one you want to submit your article for!</p>
 				on: 'bottom-start',
 			},
 			canClickTarget: false,
-			scrollTo: { behavior: 'smooth', block: 'center' },
 		});
 	}
 
@@ -219,6 +239,7 @@ Make sure the issue listed is the one you want to submit your article for!</p>
 				text: 'Finish tour',
 			}
 		],
+		scrollTo: false,
 		when: {
 			show() {
 				window.scrollTo({
@@ -226,6 +247,7 @@ Make sure the issue listed is the one you want to submit your article for!</p>
 					left: 0,
 					behavior: 'smooth',
 				});
+				renderTourProgress();
 			},
 		},
 	});
