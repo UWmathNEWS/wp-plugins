@@ -78,7 +78,7 @@ class Mathnews_Core_Admin {
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
 
-		require_once plugin_dir_path( __FILE__ ) . 'partials/class-mathnews-core-admin-display.php';
+		Utils::require(__FILE__, 'partials/class-mathnews-core-admin-display.php');
 	}
 
 	/**
@@ -326,7 +326,7 @@ class Mathnews_Core_Admin {
 	 * @since 1.0.0
 	 */
 	public function handle_post_approval($post_id, $post) {
-		if (!isset($_POST['mn-submit-nonce']) || !wp_verify_nonce($_POST['mn-submit-nonce'], basename(__FILE__))) {
+		if (empty($_POST) || !isset($_POST['mn-submit-nonce']) || !wp_verify_nonce($_POST['mn-submit-nonce'], basename(__FILE__))) {
 			return $post_id;
 		}
 
@@ -355,13 +355,11 @@ class Mathnews_Core_Admin {
 	/**
 	 * Prepend rejection rationale to content
 	 *
-	 * Not used due to usability concerns
-	 *
 	 * @since 1.0.0
 	 * @uses wp_insert_post_data
 	 */
 	public function prepend_rejection_rationale($data) {
-		if (!isset($_POST) || !isset($_POST['mn-submit-nonce']) || !wp_verify_nonce($_POST['mn-submit-nonce'], basename(__FILE__))) {
+		if (empty($_POST) || !isset($_POST['mn-submit-nonce']) || !wp_verify_nonce($_POST['mn-submit-nonce'], basename(__FILE__))) {
 			return $data;
 		}
 
@@ -391,7 +389,7 @@ class Mathnews_Core_Admin {
 	 * @uses wp_insert_post_data
 	 */
 	public function normalize_post_status_on_approval($data) {
-		if (!isset($_POST) || !isset($_POST['mn-submit-nonce']) || !wp_verify_nonce($_POST['mn-submit-nonce'], basename(__FILE__))) {
+		if (empty($_POST) || !isset($_POST['mn-submit-nonce']) || !wp_verify_nonce($_POST['mn-submit-nonce'], basename(__FILE__))) {
 			return $data;
 		}
 
@@ -421,14 +419,14 @@ class Mathnews_Core_Admin {
 	 * @since 1.0.0
 	 */
 	public function save_subtitle_post_meta($post_id, $post) {
-		if (!isset($_POST['mn-submit-nonce']) || !wp_verify_nonce($_POST['mn-submit-nonce'], basename(__FILE__))) {
+		if (empty($_POST) || !isset($_POST['mn-submit-nonce']) || !wp_verify_nonce($_POST['mn-submit-nonce'], basename(__FILE__))) {
 			return $post_id;
 		}
 
 		$post_type = $post->post_type;
 		$post_type_object = get_post_type_object($post_type);
 		$can_edit = current_user_can($post_type_object->cap->edit_post, $post_id);
-		$new_subtitle = isset($_POST['mn_subtitle']) ? trim($_POST['mn_subtitle']) : '';
+		$new_subtitle = isset($_POST['mn_subtitle']) ? sanitize_text_field($_POST['mn_subtitle']) : '';
 
 		if ($post_type !== Consts\POST_TYPE || !$can_edit) {
 			return $post_id;
@@ -451,14 +449,14 @@ class Mathnews_Core_Admin {
 	 * @since 1.0.0
 	 */
 	public function save_author_post_meta($post_id, $post) {
-		if (!isset($_POST['mn-submit-nonce']) || !wp_verify_nonce($_POST['mn-submit-nonce'], basename(__FILE__))) {
+		if (empty($_POST) || !isset($_POST['mn-submit-nonce']) || !wp_verify_nonce($_POST['mn-submit-nonce'], basename(__FILE__))) {
 			return $post_id;
 		}
 
 		$post_type = $post->post_type;
 		$post_type_object = get_post_type_object($post_type);
 		$can_edit = current_user_can($post_type_object->cap->edit_post, $post_id);
-		$new_author = isset($_POST['mn_author']) ? trim($_POST['mn_author']) : '';
+		$new_author = isset($_POST['mn_author']) ? sanitize_text_field($_POST['mn_author']) : '';
 
 		if ($post_type !== Consts\POST_TYPE || !$can_edit) {
 			return $post_id;
@@ -481,7 +479,7 @@ class Mathnews_Core_Admin {
 	 * @since 1.0.0
 	 */
 	public function save_postscript_post_meta($post_id, $post) {
-		if (!isset($_POST['mn-submit-nonce']) || !wp_verify_nonce($_POST['mn-submit-nonce'], basename(__FILE__))) {
+		if (empty($_POST) || !isset($_POST['mn-submit-nonce']) || !wp_verify_nonce($_POST['mn-submit-nonce'], basename(__FILE__))) {
 			return $post_id;
 		}
 
@@ -523,12 +521,14 @@ class Mathnews_Core_Admin {
 	 */
 	public function remove_extraneous_meta_boxes() {
 		remove_meta_box('formatdiv', 'post', 'side');
+		remove_meta_box('postimagediv', 'post', 'side');
 
 		remove_meta_box('postexcerpt', 'post', 'normal');
 		remove_meta_box('trackbacksdiv', 'post', 'normal');
 		remove_meta_box('commentstatusdiv', 'post', 'normal');
 		remove_meta_box('slugdiv', 'post', 'normal');
 		remove_meta_box('postcustom', 'post', 'normal');
+		remove_meta_box('authordiv', 'post', 'normal');
 	}
 
 	/**

@@ -1,3 +1,10 @@
+== 1.1.0 ==
+
+- Added utility functions for requiring files
+- Added extra sanitization and escaping for subtitle, author, and postscript fields
+- Updated admin hooks to only be registered on admin screens
+- Removed author and featured image meta boxes from the post edit screen
+
 == 1.0.0 ==
 
 First release, containing:

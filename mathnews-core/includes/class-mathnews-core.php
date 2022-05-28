@@ -14,6 +14,8 @@
 
 namespace Mathnews\WP\Core;
 
+use Mathnews\WP\Core\Utils;
+
 /**
  * The core plugin class.
  *
@@ -88,8 +90,6 @@ class Mathnews_Core {
 	 *
 	 * - Mathnews_Core_Loader. Orchestrates the hooks of the plugin.
 	 * - Mathnews_Core_i18n. Defines internationalization functionality.
-	 * - Mathnews_Core_Admin. Defines all hooks for the admin area.
-	 * - Mathnews_Core_Public. Defines all hooks for the public side of the site.
 	 *
 	 * Create an instance of the loader which will be used to register the hooks
 	 * with WordPress.
@@ -103,24 +103,13 @@ class Mathnews_Core {
 		 * The class responsible for orchestrating the actions and filters of the
 		 * core plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-mathnews-core-loader.php';
+		Utils::require_core('class-mathnews-core-loader.php');
 
 		/**
 		 * The class responsible for defining internationalization functionality
 		 * of the plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-mathnews-core-i18n.php';
-
-		/**
-		 * The class responsible for defining all actions that occur in the admin area.
-		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-mathnews-core-admin.php';
-
-		/**
-		 * The class responsible for defining all actions that occur in the public-facing
-		 * side of the site.
-		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-mathnews-core-public.php';
+		Utils::require_core('class-mathnews-core-i18n.php');
 
 		$this->loader = new Loader();
 
@@ -151,49 +140,52 @@ class Mathnews_Core {
 	 * @access   private
 	 */
 	private function define_admin_hooks() {
+		if (is_admin()) {
+			Utils::require(dirname( __FILE__ ), 'admin/class-mathnews-core-admin.php');
 
-		$plugin_admin = new Admin\Mathnews_Core_Admin( $this->get_plugin_name(), $this->get_version() );
+			$plugin_admin = new Admin\Mathnews_Core_Admin( $this->get_plugin_name(), $this->get_version() );
 
-		// basic loading of scripts and styles
-		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
-		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
+			// basic loading of scripts and styles
+			$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
+			$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
 
-		// create categories needed
-		$this->loader->add_action('init', $plugin_admin, 'create_categories');
+			// create categories needed
+			$this->loader->add_action('init', $plugin_admin, 'create_categories');
 
-		// register screen to set the current issue
-		$this->loader->add_action('admin_menu', $plugin_admin, 'add_current_issue_settings_screen');
-		$this->loader->add_action('admin_init', $plugin_admin, 'register_current_issue_settings');
-		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_current_issue_settings_scripts');
+			// register screen to set the current issue
+			$this->loader->add_action('admin_menu', $plugin_admin, 'add_current_issue_settings_screen');
+			$this->loader->add_action('admin_init', $plugin_admin, 'register_current_issue_settings');
+			$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_current_issue_settings_scripts');
 
-		// register meta boxes and additional fields
-		$this->loader->add_action('load-post.php', $plugin_admin, 'meta_box_setup');
-		$this->loader->add_action('load-post-new.php', $plugin_admin, 'meta_box_setup');
+			// register meta boxes and additional fields
+			$this->loader->add_action('load-post.php', $plugin_admin, 'meta_box_setup');
+			$this->loader->add_action('load-post-new.php', $plugin_admin, 'meta_box_setup');
 
-		// register additional input fields' corresponding action handlers
-		$this->loader->add_action('save_post_post', $plugin_admin, 'save_subtitle_post_meta', 10, 2);
-		$this->loader->add_action('save_post_post', $plugin_admin, 'save_author_post_meta', 10, 2);
-		$this->loader->add_action('save_post_post', $plugin_admin, 'save_postscript_post_meta', 10, 2);
+			// register additional input fields' corresponding action handlers
+			$this->loader->add_action('save_post_post', $plugin_admin, 'save_subtitle_post_meta', 10, 2);
+			$this->loader->add_action('save_post_post', $plugin_admin, 'save_author_post_meta', 10, 2);
+			$this->loader->add_action('save_post_post', $plugin_admin, 'save_postscript_post_meta', 10, 2);
 
-		// add the current issue tag
-		$this->loader->add_action('pending_post', $plugin_admin, 'add_current_issue_tag', 10, 2);
+			// add the current issue tag
+			$this->loader->add_action('pending_post', $plugin_admin, 'add_current_issue_tag', 10, 2);
 
-		// handlers for post approval and rejection
-		$this->loader->add_action('save_post_post', $plugin_admin, 'handle_post_approval', 10, 2);
-		$this->loader->add_filter('wp_insert_post_data', $plugin_admin, 'prepend_rejection_rationale');
+			// handlers for post approval and rejection
+			$this->loader->add_action('save_post_post', $plugin_admin, 'handle_post_approval', 10, 2);
+			$this->loader->add_filter('wp_insert_post_data', $plugin_admin, 'prepend_rejection_rationale');
 
-		// lock editor after submission
-		$this->loader->add_action('admin_footer-post.php', $plugin_admin, 'show_editor_lock_warning');
-		$this->loader->add_filter('tiny_mce_before_init', $plugin_admin, 'lock_tinymce');
-		$this->loader->add_filter('teeny_mce_before_init', $plugin_admin, 'lock_tinymce');
+			// lock editor after submission
+			$this->loader->add_action('admin_footer-post.php', $plugin_admin, 'show_editor_lock_warning');
+			$this->loader->add_filter('tiny_mce_before_init', $plugin_admin, 'lock_tinymce');
+			$this->loader->add_filter('teeny_mce_before_init', $plugin_admin, 'lock_tinymce');
 
-		// restrict contributors from quick-editing posts
-		$this->loader->add_filter('quick_edit_show_taxonomy', $plugin_admin, 'remove_categories_from_quickedit', 10, 3);
-		$this->loader->add_filter('post_row_actions', $plugin_admin, 'modify_post_row_actions', 10, 2);
+			// restrict contributors from quick-editing posts
+			$this->loader->add_filter('quick_edit_show_taxonomy', $plugin_admin, 'remove_categories_from_quickedit', 10, 3);
+			$this->loader->add_filter('post_row_actions', $plugin_admin, 'modify_post_row_actions', 10, 2);
 
-		// AB tests
-		$this->loader->add_filter('the_author', $plugin_admin, 'filter_author_AB');
-		$this->loader->add_action('admin_notices', $plugin_admin, 'feedback_notice');
+			// AB tests
+			$this->loader->add_filter('the_author', $plugin_admin, 'filter_author_AB');
+			$this->loader->add_action('admin_notices', $plugin_admin, 'feedback_notice');
+		}
 	}
 
 	/**
@@ -204,6 +196,8 @@ class Mathnews_Core {
 	 * @access   private
 	 */
 	private function define_public_hooks() {
+
+		Utils::require(dirname( __FILE__ ), 'public/class-mathnews-core-public.php');
 
 		$plugin_public = new Public_\Mathnews_Core_Public( $this->get_plugin_name(), $this->get_version() );
 

@@ -131,7 +131,7 @@ class Display {
 		?>
 <div>
     <p>Please state why this article is being rejected.</p>
-    <textarea id="mn-reject-rationale" name="mn-reject-rationale" class="widefat" rows="10"><?php echo esc_html($reject_rationale); ?></textarea>
+    <textarea id="mn-reject-rationale" name="mn-reject-rationale" class="widefat" rows="10"><?php echo esc_textarea($reject_rationale); ?></textarea>
 </div>
 <div>
     <p style="float:left">
@@ -152,7 +152,7 @@ class Display {
 	static public function subtitle_input($subtitle, $can_edit_post) {
 		?>
 <div id="mn-subtitlewrap">
-    <input type="text" name="mn_subtitle" size="30" value="<?php echo esc_attr( $subtitle ); ?>" id="mn-subtitle" spellcheck="true" autocomplete="off"
+    <input type="text" name="mn_subtitle" size="30" value="<?php echo esc_textarea( $subtitle ); ?>" id="mn-subtitle" spellcheck="true" autocomplete="off"
         placeholder="<?php _e('Subtitle (optional)', 'textdomain') ?>" <?php echo ($can_edit_post ? '' : 'disabled'); ?> />
 </div>
 		<?php
