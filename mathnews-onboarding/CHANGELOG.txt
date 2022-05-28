@@ -1,0 +1,10 @@
+== 1.0.1 ==
+
+- Fixed bug where onboarding would show on all version updates
+- Change response of onboarding completion endpoint to match WordPress JSON standards
+- Added check to ensure minimum mathNEWS Core version
+- Update required version of mathNEWS Core to 1.1.0
+
+== 1.0.0 ==
+
+First release

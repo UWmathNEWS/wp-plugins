@@ -64,7 +64,7 @@ class Mathnews_Onboarding_Admin {
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
-		$this->major_version = explode('.', $version, 1)[0];
+		$this->major_version = explode('.', $version, 2)[0];
 
 	}
 
@@ -141,9 +141,9 @@ class Mathnews_Onboarding_Admin {
 		check_ajax_referer('mn_onboarding');
 
 		if (update_user_option(get_current_user_id(), Consts\ONBOARDING_OPTION_KEY_NAME, $this->current_onboarding_value())) {
-			wp_die('success');
+			wp_send_json_success();
 		}
 
-		wp_die('failure');
+		wp_send_json_error();
 	}
 }

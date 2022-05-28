@@ -14,6 +14,8 @@
 
 namespace Mathnews\WP\Onboarding;
 
+use Mathnews\WP\Core\Utils;
+
 /**
  * The core plugin class.
  *
@@ -101,18 +103,18 @@ class Mathnews_Onboarding {
 		 * The class responsible for orchestrating the actions and filters of the
 		 * core plugin.
 		 */
-		require_once MATHNEWS_CORE_BASEDIR . 'includes/class-mathnews-core-loader.php';
+		Utils::require_core('class-mathnews-core-loader.php');
 
 		/**
 		 * The class responsible for defining internationalization functionality
 		 * of the plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-mathnews-onboarding-i18n.php';
+		Utils::require(__FILE__, 'class-mathnews-onboarding-i18n.php');
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-mathnews-onboarding-admin.php';
+		Utils::require(dirname( __FILE__ ), 'admin/class-mathnews-onboarding-admin.php');
 
 		$this->loader = new \Mathnews\WP\Core\Loader();
 
