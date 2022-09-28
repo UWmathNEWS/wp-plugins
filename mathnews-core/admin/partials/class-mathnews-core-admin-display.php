@@ -17,6 +17,65 @@ namespace Mathnews\WP\Core\Admin\Partials;
 use Mathnews\WP\Core\Consts;
 
 class Display {
+    /**
+     * Renders the plugin settings screen
+     *
+     * @since 1.2.0
+     */
+    static public function render_settings_screen() {
+        ?>
+<div class="wrap">
+    <h1><?php _e('mathNEWS Settings', 'textdomain'); ?></h1>
+    <form action="options.php" method="post">
+        <?php
+        settings_fields(Consts\CORE_SETTINGS_SLUG);
+        do_settings_sections(Consts\CORE_SETTINGS_SLUG);
+        ?>
+        <button type="submit" name="submit" id="submit" class="button button-primary button-large">
+            <?php _e('Save Changes'); ?>
+        </button>
+    </form>
+</div>
+        <?php
+    }
+
+    /**
+     * General function to render a plugin setting text field
+     *
+     * @since 1.2.0
+     */
+    static public function render_settings_text_field($option_name, $default = '', $args = []) {
+        return function() use ($option_name, $default, $args) {
+            ?>
+<input type="text" id="<?php echo esc_attr($option_name); ?>" name="<?php echo esc_attr($option_name); ?>"
+    value="<?php echo esc_attr(get_option($option_name), $default); ?>" size="30" />
+            <?php
+            if (!empty($args['description'])) {
+                ?>
+<p class="description"><?php echo $args['description']; ?></p>
+                <?php
+            }
+        };
+    }
+
+    /**
+     * General function to render a plugin setting textarea field
+     *
+     * @since 1.2.0
+     */
+    static public function render_settings_textarea_field($option_name, $default = '', $args = []) {
+        return function() use ($option_name, $default, $args) {
+            ?>
+<textarea id="<?php echo esc_attr($option_name); ?>" name="<?php echo esc_attr($option_name); ?>" class="large-text"><?php echo esc_html(get_option($option_name), $default); ?></textarea>
+            <?php
+            if (!empty($args['description'])) {
+                ?>
+<p class="description"><?php echo $args['description']; ?></p>
+                <?php
+            }
+        };
+    }
+
 	/**
 	 * Renders a screen to set the current issue
 	 *
@@ -158,6 +217,28 @@ class Display {
 		<?php
 	}
 
+    /**
+     * Renders a helpful links meta box
+     *
+     * @since 1.2.0
+     */
+    static public function render_helpful_links_meta_box() {
+        $links = explode('\n', get_option(Consts\HELPFUL_LINKS_OPTION_NAME));
+        ?>
+<ul>
+    <?php
+        foreach ($links as $link) {
+            $url_and_title = explode(' ', $link, 2);
+            ?>
+    <li><a href="<?php echo esc_url($url_and_title[0]); ?>" target="_blank" rel="noreferer nofollow noopener"><?php echo esc_html($url_and_title[1]); ?></a></li>
+            <?php
+        }
+    ?>
+    <li><a href="#repeat-tour" onclick="window.mathNEWSShowOnboarding();return false">Repeat onboarding tour</a></li>
+</ul>
+        <?php
+    }
+
 	/**
 	 * Renders a feedback admin notice
 	 *
@@ -257,49 +338,29 @@ class Display {
     <div id="misc-publishing-actions">
         <div class="misc-pub-section misc-pub-post-status">
             <?php _e( 'Status:' ); ?>
-            <span id="post-status-display">
-                <?php
-                switch ( $post->post_status ) {
-                    case 'private':
-                        _e( 'Privately Published' );
-                        break;
-                    case 'publish':
-                        _e( 'Published' );
-                        break;
-                    case 'future':
-                        _e( 'Scheduled' );
-                        break;
-                    case 'pending':
-                        _e( 'Pending Review' );
-                        break;
-                    case 'draft':
-                    case 'auto-draft':
-                        _e( 'Draft' );
-                        break;
-                }
-                ?>
-            </span>
-
             <?php
-            if ( 'publish' === $post->post_status || 'private' === $post->post_status || $can_publish ) {
-                $private_style = '';
-                if ( 'private' === $post->post_status ) {
-                    $private_style = 'style="display:none"';
-                }
+            if (!$can_publish) {
                 ?>
-                <a href="#post_status" <?php echo $private_style; ?> class="edit-post-status hide-if-no-js" role="button"><span aria-hidden="true"><?php _e( 'Edit' ); ?></span> <span class="screen-reader-text"><?php _e( 'Edit status' ); ?></span></a>
-
-                <div id="post-status-select" class="hide-if-js">
+                <span id="post-status-display">
+                    <?php
+                    switch ( $post->post_status ) {
+                        case 'pending':
+                            _e( 'Pending Review' );
+                            break;
+                        case 'draft':
+                        case 'auto-draft':
+                            _e( 'Draft' );
+                            break;
+                    }
+                    ?>
+                </span>
+                <?php
+            } else {
+                ?>
                     <input type="hidden" name="hidden_post_status" id="hidden_post_status" value="<?php echo esc_attr( ( 'auto-draft' === $post->post_status ) ? 'draft' : $post->post_status ); ?>" />
                     <label for="post_status" class="screen-reader-text"><?php _e( 'Set status' ); ?></label>
-                    <select name="post_status" id="post_status">
-                        <?php if ( 'publish' === $post->post_status ) : ?>
-                            <option<?php selected( $post->post_status, 'publish' ); ?> value='publish'><?php _e( 'Published' ); ?></option>
-                        <?php elseif ( 'private' === $post->post_status ) : ?>
-                            <option<?php selected( $post->post_status, 'private' ); ?> value='publish'><?php _e( 'Privately Published' ); ?></option>
-                        <?php elseif ( 'future' === $post->post_status ) : ?>
-                            <option<?php selected( $post->post_status, 'future' ); ?> value='future'><?php _e( 'Scheduled' ); ?></option>
-                        <?php endif; ?>
+                    <select name="post_status" id="post_status"
+                        onchange="jQuery('#save-post').val(`Save as ${this.options[this.selectedIndex].text.split(' ')[0]}`);return false;">
                             <option<?php selected( $post->post_status, 'pending' ); ?> value='pending'><?php _e( 'Pending Review' ); ?></option>
                         <?php if ( 'auto-draft' === $post->post_status ) : ?>
                             <option<?php selected( $post->post_status, 'auto-draft' ); ?> value='draft'><?php _e( 'Draft' ); ?></option>
@@ -307,9 +368,6 @@ class Display {
                             <option<?php selected( $post->post_status, 'draft' ); ?> value='draft'><?php _e( 'Draft' ); ?></option>
                         <?php endif; ?>
                     </select>
-                    <a href="#post_status" class="save-post-status hide-if-no-js button"><?php _e( 'OK' ); ?></a>
-                    <a href="#post_status" class="cancel-post-status hide-if-no-js button-cancel"><?php _e( 'Cancel' ); ?></a>
-                </div>
                 <?php
             }
             ?>

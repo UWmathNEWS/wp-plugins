@@ -1,4 +1,20 @@
-/**
- * All of the CSS for your public-facing functionality should be
- * included in this file.
- */
+/* Display and style subtitle only in the header of a post */
+.entry-subtitle {
+  display: none;
+}
+.entry-title + .entry-subtitle {
+  display: block;
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1.0909090909;
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+}
+
+.entry-pseudonym {
+  text-align: right;
+}
+
+.entry-postscript {
+  font-size: 0.8em;
+}

@@ -150,12 +150,19 @@ class Mathnews_Core {
 			$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
 
 			// create categories needed
-			$this->loader->add_action('init', $plugin_admin, 'create_categories');
+			$this->loader->add_action('admin_init', $plugin_admin, 'create_categories');
+
+			// register settings screen
+			$this->loader->add_action('admin_menu', $plugin_admin, 'add_settings_screen');
+			$this->loader->add_action('admin_init', $plugin_admin, 'register_settings');
 
 			// register screen to set the current issue
 			$this->loader->add_action('admin_menu', $plugin_admin, 'add_current_issue_settings_screen');
 			$this->loader->add_action('admin_init', $plugin_admin, 'register_current_issue_settings');
 			$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_current_issue_settings_scripts');
+
+			// remove quick draft widget from dashboard
+			$this->loader->add_action('admin_init', $plugin_admin, 'remove_quick_draft_widget');
 
 			// register meta boxes and additional fields
 			$this->loader->add_action('load-post.php', $plugin_admin, 'meta_box_setup');
@@ -168,6 +175,12 @@ class Mathnews_Core {
 
 			// add the current issue tag
 			$this->loader->add_action('pending_post', $plugin_admin, 'add_current_issue_tag', 10, 2);
+
+			// add link to pending articles to sidebar
+			$this->loader->add_action('admin_menu', $plugin_admin, 'link_to_pending');
+
+			// colour categories for easy recognition
+			$this->loader->add_filter('post_column_taxonomy_links', $plugin_admin, 'colourize_categories', 10, 3);
 
 			// handlers for post approval and rejection
 			$this->loader->add_action('save_post_post', $plugin_admin, 'handle_post_approval', 10, 2);
@@ -200,6 +213,10 @@ class Mathnews_Core {
 		Utils::require(dirname( __FILE__ ), 'public/class-mathnews-core-public.php');
 
 		$plugin_public = new Public_\Mathnews_Core_Public( $this->get_plugin_name(), $this->get_version() );
+
+		$this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_styles');
+		$this->loader->add_filter('the_title', $plugin_public, 'show_post_subtitle', 1);
+		$this->loader->add_filter('the_content', $plugin_public, 'show_post_meta', 1);
 
 	}
 

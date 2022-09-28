@@ -203,6 +203,43 @@ class Mathnews_Core_Admin {
 	}
 
 	/**
+	 * Register settings options
+	 *
+	 * @since 1.2.0
+	 */
+	public function register_settings() {
+		register_setting(Consts\CORE_SETTINGS_SLUG, Consts\HELPFUL_LINKS_OPTION_NAME);
+
+		add_settings_section(
+			Consts\CORE_SETTINGS_SLUG . '-general',
+			'General',
+			false,
+			Consts\CORE_SETTINGS_SLUG
+		);
+
+		add_settings_field(
+			Consts\HELPFUL_LINKS_OPTION_NAME . '-input',
+			__('Helpful links', 'textdomain'),
+			Display::render_settings_textarea_field(Consts\HELPFUL_LINKS_OPTION_NAME, '', [
+				'description' => 'Shown in the post writing screen. One link per line, in the format <code>URL link_title</code>'
+			]),
+			Consts\CORE_SETTINGS_SLUG,
+			Consts\CORE_SETTINGS_SLUG . '-general',
+			['label_for' => Consts\HELPFUL_LINKS_OPTION_NAME]
+		);
+	}
+
+	/**
+	 * Add settings screen
+	 *
+	 * @since 1.2.0
+	 */
+	public function add_settings_screen() {
+		add_options_page(__('mathNEWS Settings', 'textdomain'), __('mathNEWS Settings', 'textdomain'), 'manage_options',
+			Consts\CORE_SETTINGS_SLUG, array(Display::class, 'render_settings_screen'));
+	}
+
+	/**
 	 * Register current issue option
 	 *
 	 * @since 1.0.0
@@ -246,6 +283,19 @@ class Mathnews_Core_Admin {
 			wp_enqueue_script( $this->plugin_name . Consts\CURRENT_ISSUE_SETTINGS_SLUG,
 				plugin_dir_url( __FILE__ ) . 'js/mathnews-core-set-current-issue.js', ['jquery'], $this->version, true );
 		}
+	}
+
+	/**
+	 * Remove quick draft widget from dashboard.
+	 *
+	 * This is because WordPress will format posts created using this widget as if they were composed in the
+	 * block editor. This introduces extra formatting that breaks our import scripts and also, at times, the
+	 * Classic Editor.
+	 *
+	 * @since 1.2.0
+	 */
+	public function remove_quick_draft_widget()	{
+		remove_meta_box('dashboard_quick_press', 'dashboard', 'normal');
 	}
 
 	/**
@@ -318,6 +368,49 @@ class Mathnews_Core_Admin {
 			$default_tag = "v{$cur_issue[0]}i{$cur_issue[1]}";
 			wp_set_post_tags($post_id, $default_tag);
 		}
+	}
+
+	/**
+	 * Add a link to the list of pending posts
+	 *
+	 * @since 1.1.1
+	 */
+	public function link_to_pending() {
+		add_submenu_page('edit.php', __('Pending') . ' ' . __('Posts'), __('Pending') . ' ' . __('Posts'),
+			'edit_others_posts', admin_url('edit.php?post_status=pending&post_type=post&orderby=date&order=desc'),
+			'', 1);
+	}
+
+	/**
+	 * Colourize categories and select tags so they're more visible
+	 *
+	 * @since 1.1.1
+	 */
+	public function colourize_categories($term_links, $taxonomy, $terms) {
+		if (!current_user_can('edit_others_posts')) {
+			return $term_links;
+		}
+
+		$n = count($terms);
+
+		if ($taxonomy === 'category') {
+			for ($i = 0; $i < $n; $i++) {
+				if (in_array($terms[$i]->name, [Consts\APPROVED_CAT_NAME, 'Uncategorized'], true)) {
+					$term_links[$i] = sprintf('<span class="taxonomy-pill category--%s">%s</span>', $terms[$i]->slug, $term_links[$i]);
+					break;
+				}
+			}
+		} elseif ($taxonomy === 'post_tag') {
+			$cur_issue = get_option(Consts\CURRENT_ISSUE_OPTION_NAME, Consts\CURRENT_ISSUE_OPTION_DEFAULT);
+			$default_tag = "v{$cur_issue[0]}i{$cur_issue[1]}";
+			for ($i = 0; $i < $n; $i++) {
+				if ($terms[$i]->name === $default_tag) {
+					$term_links[$i] = sprintf('<span class="taxonomy-pill tag--current-issue">%s</span>', $term_links[$i]);
+				}
+			}
+		}
+
+		return $term_links;
 	}
 
 	/**
@@ -456,7 +549,7 @@ class Mathnews_Core_Admin {
 		$post_type = $post->post_type;
 		$post_type_object = get_post_type_object($post_type);
 		$can_edit = current_user_can($post_type_object->cap->edit_post, $post_id);
-		$new_author = isset($_POST['mn_author']) ? sanitize_text_field($_POST['mn_author']) : '';
+		$new_author = isset($_POST['mn_author']) ? sanitize_text_field($_POST['mn_author']) : get_the_author_meta('nickname', $post->post_author);
 
 		if ($post_type !== Consts\POST_TYPE || !$can_edit) {
 			return $post_id;
@@ -464,12 +557,10 @@ class Mathnews_Core_Admin {
 
 		$current_author = get_post_meta($post_id, Consts\AUTHOR_META_KEY_NAME, true);
 
-		if ($new_author !== '' && $current_author === '') {
-			add_post_meta($post_id, Consts\AUTHOR_META_KEY_NAME, $new_author, true);
-		} elseif ($new_author !== '' && $new_author !== $current_author) {
+		if ($new_author !== '' && $new_author !== $current_author) {
 			update_post_meta($post_id, Consts\AUTHOR_META_KEY_NAME, $new_author);
-		} elseif ($new_author === '') {
-			update_post_meta($post_id, Consts\AUTHOR_META_KEY_NAME, get_the_author_meta('nickname', $post->post_author));
+		} elseif ($current_author === '') {
+			add_post_meta($post_id, Consts\AUTHOR_META_KEY_NAME, $new_author, true);
 		}
 	}
 
@@ -558,13 +649,16 @@ class Mathnews_Core_Admin {
 		$screen_is_publish = current_user_can('manage_options') && isset($_GET) && isset($_GET['mn-publish']);
 
 		// only apply to posts that aren't backissue posts
-		if (!$post_to_be_published && !$screen_is_publish) {
+		if (get_post_type() === Consts\POST_TYPE && !$post_to_be_published && !$screen_is_publish) {
 			// replace publish meta box
 			remove_meta_box('submitdiv', 'post', 'side');
 			add_meta_box('mn-submitdiv', __('Submit', 'textdomain'), array($this, 'render_publish_meta_box'), 'post', 'side', 'high');
 
 			// add subtitle input
 			add_action('edit_form_before_permalink', array($this, 'add_subtitle_input'));
+
+			// add writer's guide notice box
+			add_meta_box('mn-helpful-links', __('Helpful Links', 'textdomain'), array($this, 'render_helpful_links_meta_box'), 'post', 'side', 'high');
 
 			// add postscript meta box
 			$postscript_meta_box_id = 'mn-postscriptdiv';
@@ -592,6 +686,15 @@ class Mathnews_Core_Admin {
 		$subtitle = get_post_meta($post->ID, Consts\SUBTITLE_META_KEY_NAME, true);
 
 		Display::subtitle_input($subtitle, Utils::can_edit($post));
+	}
+
+	/**
+	 * Wrapper for rendering the helpful links meta box
+	 *
+	 * @since 1.2.0
+	 */
+	public function render_helpful_links_meta_box($post) {
+		Display::render_helpful_links_meta_box();
 	}
 
 	/**

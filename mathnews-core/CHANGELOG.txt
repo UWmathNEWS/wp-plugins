@@ -1,3 +1,13 @@
+== 1.2.0 ==
+
+- Fixed fatal error if categories didn't already exist
+- Added link to pending articles to admin menu sidebar
+- Added colours to categories and select tags so they're more visible
+- Added pseudonym and footnotes to article previews
+- Added helpful links meta box to sidebar
+- Added plugin settings screen
+- Removed Quick Draft widget from dashboard as it was misformatting posts
+
 == 1.1.0 ==
 
 - Added utility functions for requiring files

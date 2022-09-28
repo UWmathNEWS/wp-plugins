@@ -90,6 +90,20 @@ const CURRENT_ISSUE_OPTION_NAME = 'mn_current_issue';
 const CURRENT_ISSUE_OPTION_DEFAULT = ['123', '4'];  // [volume_num, issue_num]
 
 /**
+ * Plugin settings page slug
+ *
+ * @since 1.2.0
+ */
+const CORE_SETTINGS_SLUG = 'mn-settings';
+
+/**
+ * Helpful links list option name
+ *
+ * @since 1.2.0
+ */
+const HELPFUL_LINKS_OPTION_NAME = 'mn_helpful_links';
+
+/**
  * Onboarding option key name
  *
  * @since 1.0.0

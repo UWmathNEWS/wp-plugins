@@ -59,3 +59,28 @@ input#mn-author {
 #normal-sortables .hndle {
 	cursor: pointer;
 }
+
+/* Colours for categories in post list table */
+.taxonomy-pill {
+	padding: 1px 5px;
+	border-radius: 1.5em;
+	background-color: #e5e5e7;
+	color: #333;
+}
+.taxonomy-pill a {
+	color: inherit;
+}
+.taxonomy-pill a:hover {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.status-pending .category--uncategorized {
+	background-color: #f2c94c;
+}
+.category--editor-okayed {
+	background-color: #c4edac;
+}
+.tag--current-issue {
+	background-color: #ffc2de;
+}

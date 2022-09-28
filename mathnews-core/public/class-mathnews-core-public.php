@@ -12,6 +12,8 @@
 
 namespace Mathnews\WP\Core\Public_;
 
+use Mathnews\WP\Core\Consts;
+
 /**
  * The public-facing functionality of the plugin.
  *
@@ -54,6 +56,26 @@ class Mathnews_Core_Public {
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
 
+	}
+
+	/**
+	 * Determine if the current post is an article or not.
+	 *
+	 * @since 1.2.0
+	 */
+	private function is_article($post_id = false) {
+		$is_article = 0 === count(array_filter(get_the_category($post_id), function($term) {
+			return $term->name === Consts\BACKISSUE_CAT_NAME;
+		}));
+	}
+
+	/**
+	 * Determine if the current post is a valid preview or not.
+	 *
+	 * @since 1.2.0
+	 */
+	private function is_preview() {
+		return is_singular() && is_preview() && current_user_can('edit_post', get_the_ID());
 	}
 
 	/**
@@ -122,6 +144,45 @@ class Mathnews_Core_Public {
 				$wp_query->set("post_type", "mn-issue");
 
 		}
+	}
+
+	function show_post_subtitle($title) {
+		$is_article = 0 === count(array_filter(get_the_category(), function($term) {
+			return $term->name === Consts\BACKISSUE_CAT_NAME;
+		}));
+		if (is_preview() && in_the_loop() && is_main_query() && $is_article) {
+			$post_id = get_the_ID();
+			$subtitle = get_post_meta($post_id, Consts\SUBTITLE_META_KEY_NAME, true);
+			if ($subtitle !== '') {
+				// abuse the fact that headings cannot be nested in each other
+				return $title . '<h3 class="entry-subtitle">' . $subtitle . '</h3>';
+			}
+		}
+
+		return $title;
+	}
+
+	function show_post_meta($content) {
+		$is_article = 0 === count(array_filter(get_the_category(), function($term) {
+			return $term->name === Consts\BACKISSUE_CAT_NAME;
+		}));
+		if (is_preview() && in_the_loop() && is_main_query() && $is_article) {
+			$post_id = get_the_ID();
+			$new_content = $content;
+			$author = get_post_meta($post_id, Consts\AUTHOR_META_KEY_NAME, true);
+			$postscript = get_post_meta($post_id, Consts\POSTSCRIPT_META_KEY_NAME, true);
+
+			$new_content .= '<address class="entry-pseudonym">' . esc_html($author) . '</address>';
+
+			if ($postscript !== '') {
+				// no esc_html because people can and do put HTML in the postscript
+				$new_content .= '<footer class="entry-postscript">' . $postscript . '</footer>';
+			}
+
+			return $new_content;
+		}
+
+		return $content;
 	}
 
 }
