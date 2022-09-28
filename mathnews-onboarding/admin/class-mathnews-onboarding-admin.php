@@ -104,10 +104,6 @@ class Mathnews_Onboarding_Admin {
 	 * @since 1.0.0
 	 */
 	public function enqueue_onboarding_styles() {
-		if (!$this->show_onboarding()) {
-			return;
-		}
-
 		wp_enqueue_style( 'shepherd', plugin_dir_url( __FILE__ ) . 'css/vendor/shepherd.css', array(), '9.1.0', 'all' );
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/mathnews-onboarding.css', array(), $this->version, 'all' );
 	}
@@ -118,17 +114,14 @@ class Mathnews_Onboarding_Admin {
 	 * @since 1.0.0
 	 */
 	public function enqueue_onboarding_scripts() {
-		if (!$this->show_onboarding()) {
-			return;
-		}
-
 		$nonce = wp_create_nonce('mn_onboarding');
 
 		wp_enqueue_script( 'shepherd', plugin_dir_url( __FILE__ ) . 'js/vendor/shepherd.min.js', [], '9.1.0', true );
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/mathnews-onboarding.js',
 			['shepherd', 'jquery', 'mathnews-core'], $this->version, true );
 		wp_localize_script($this->plugin_name, 'mn_onboarding', [
-			'nonce'        => $nonce,
+			'showOnboarding'   => $this->show_onboarding(),
+			'nonce'            => $nonce,
 		]);
 	}
 

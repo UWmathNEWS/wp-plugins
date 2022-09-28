@@ -16,7 +16,7 @@
  * Plugin Name:       mathNEWS Onboarding
  * Plugin URI:        mathnews.uwaterloo.ca
  * Description:       Onboard writers to the mathNEWS submission flow
- * Version:           1.0.1
+ * Version:           1.0.2
  * Author:            mathNEWS Editors
  * Author URI:        All licensing queries should be directed to mathnews@gmail.com
  * License:           AGPL-3.0
@@ -37,13 +37,13 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-const VERSION = '1.0.1';
+const VERSION = '1.0.2';
 define( 'MATHNEWS_ONBOARDING_VERSION', VERSION );  // legacy API
 
 /**
  * Minimum version of mathNEWS Core required
  */
-const MIN_MATHNEWS_CORE = '1.1.0';
+const MIN_MATHNEWS_CORE = '1.2.0';
 
 /**
  * The code that runs during plugin activation.

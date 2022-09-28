@@ -1,9 +1,15 @@
+== 1.0.2 ==
+
+- Fixed issues with small screen sizes causing onboarding dialog to fly off-screen
+- Added integration with new helpful links meta box
+- Updated required version of mathNEWS Core to 1.2.0
+
 == 1.0.1 ==
 
 - Fixed bug where onboarding would show on all version updates
-- Change response of onboarding completion endpoint to match WordPress JSON standards
+- Changed response of onboarding completion endpoint to match WordPress JSON standards
 - Added check to ensure minimum mathNEWS Core version
-- Update required version of mathNEWS Core to 1.1.0
+- Updated required version of mathNEWS Core to 1.1.0
 
 == 1.0.0 ==
 

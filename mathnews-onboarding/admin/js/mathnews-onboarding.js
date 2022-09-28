@@ -71,7 +71,6 @@
 			text: `<p>Here's where you write. Give us a title and an article, and we'll (probably) publish it.</p>`,
 			attachTo: {
 				element: '#post-body-content',
-				on: 'auto',
 			},
 		});
 	}
@@ -222,8 +221,9 @@ Make sure the issue listed is the one you want to submit your article for!</p>
 	// Ending screen
 	tour.addStep({
 		id: 'end',
-		text: `<p>That's all for this tour. If you haven't already, check out the <a href="https://mathnews.notion.site/How-to-write-a-mathNEWS-article-a3cd29a0637245678fe21451e9a42d68" target="_blank" rel="noreferer nofollow noopener">writer's guide</a> for more tips and tricks.</p>
+		text: `<p>That's all for this tour. If you haven't already, check out the Helpful Links section on the sidebar for more tips and tricks.</p>
 <p>Happy writing!</p>`,
+		attachTo: { element: '#mn-helpful-links' },
 		buttons: [
 			{
 				action() {
@@ -263,6 +263,10 @@ Make sure the issue listed is the one you want to submit your article for!</p>
 		);
 	});
 
-	tour.start();
+	window.mathNEWSShowOnboarding = () => tour.start();
+
+	if (mn_onboarding.showOnboarding) {
+		mathNEWSShowOnboarding();
+	}
 
 })(jQuery);
