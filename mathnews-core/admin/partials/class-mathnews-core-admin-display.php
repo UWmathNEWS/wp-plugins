@@ -223,7 +223,7 @@ class Display {
      * @since 1.2.0
      */
     static public function render_helpful_links_meta_box() {
-        $links = explode('\n', get_option(Consts\HELPFUL_LINKS_OPTION_NAME));
+        $links = preg_split('/\r\n|\r|\n/', get_option(Consts\HELPFUL_LINKS_OPTION_NAME), -1, PREG_SPLIT_NO_EMPTY);
         ?>
 <ul>
     <?php

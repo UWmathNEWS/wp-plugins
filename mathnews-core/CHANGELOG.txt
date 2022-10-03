@@ -1,3 +1,7 @@
+== 1.2.1 ==
+
+- Fixed multiple helpful links being parsed/rendered incorrectly
+
 == 1.2.0 ==
 
 - Fixed fatal error if categories didn't already exist
