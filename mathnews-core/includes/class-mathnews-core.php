@@ -173,8 +173,9 @@ class Mathnews_Core {
 			$this->loader->add_action('save_post_post', $plugin_admin, 'save_author_post_meta', 10, 2);
 			$this->loader->add_action('save_post_post', $plugin_admin, 'save_postscript_post_meta', 10, 2);
 
-			// add the current issue tag
+			// add the current issue tag and normalize categories on submit
 			$this->loader->add_action('pending_post', $plugin_admin, 'add_current_issue_tag', 10, 2);
+			$this->loader->add_action('pending_post', $plugin_admin, 'normalize_categories_on_submit', 10, 2);
 
 			// add link to pending articles to sidebar
 			$this->loader->add_action('admin_menu', $plugin_admin, 'link_to_pending');
@@ -185,6 +186,7 @@ class Mathnews_Core {
 			// handlers for post approval and rejection
 			$this->loader->add_action('save_post_post', $plugin_admin, 'handle_post_approval', 10, 2);
 			$this->loader->add_filter('wp_insert_post_data', $plugin_admin, 'prepend_rejection_rationale');
+			$this->loader->add_filter('wp_insert_post_data', $plugin_admin, 'normalize_post_status_on_approval');
 
 			// lock editor after submission
 			$this->loader->add_action('admin_footer-post.php', $plugin_admin, 'show_editor_lock_warning');

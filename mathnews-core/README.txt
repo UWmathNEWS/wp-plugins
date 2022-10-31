@@ -1,8 +1,8 @@
 === mathNEWS Core ===
 Contributors: All licensing queries should be directed to mathnews@gmail.com
 Requires at least: 5.9.0
-Tested up to: 6.0.3
-Stable tag: 6.0.3
+Tested up to: 6.0.4
+Stable tag: 6.0.4
 License: AGPLv3
 License URI: https://www.gnu.org/licenses/agpl-3.0.en.html
 

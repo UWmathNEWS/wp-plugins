@@ -371,6 +371,16 @@ class Mathnews_Core_Admin {
 	}
 
 	/**
+	 * Normalize categories on submission. This is to ensure freshly submitted articles aren't marked with a decision.
+	 *
+	 * @since 1.2.2
+	 * @uses pending_post
+	 */
+	public function normalize_categories_on_submit($post_id, $post) {
+		wp_set_post_categories($post_id, []);
+	}
+
+	/**
 	 * Add a link to the list of pending posts
 	 *
 	 * @since 1.1.1
@@ -476,8 +486,6 @@ class Mathnews_Core_Admin {
 	/**
 	 * Automatically set post status as pending if approved, and draft as rejected (to give the writer a chance to workshop it)
 	 *
-	 * Not used due to usability concerns
-	 *
 	 * @since 1.0.0
 	 * @uses wp_insert_post_data
 	 */
@@ -491,13 +499,14 @@ class Mathnews_Core_Admin {
 		$can_approve      = current_user_can('edit_others_posts');
 		$is_approved      = isset($_POST['mn-approve']);
 		$is_rejected      = isset($_POST['mn-reject']);
+		$return_to_author = $_POST['mn-reject-draft'] ?? 0;
 
 		if ($post_type !== Consts\POST_TYPE || !$can_approve || !($is_approved || $is_rejected)) {
 			return $data;
 		}
 
 		// let rejection take precedence over approval
-		if ($is_rejected) {
+		if ($is_rejected && $return_to_author) {
 			$data['post_status'] = 'draft';
 		} elseif ($is_approved) {
 			$data['post_status'] = 'pending';

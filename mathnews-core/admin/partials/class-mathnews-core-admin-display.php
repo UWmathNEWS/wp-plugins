@@ -191,6 +191,10 @@ class Display {
 <div>
     <p>Please state why this article is being rejected.</p>
     <textarea id="mn-reject-rationale" name="mn-reject-rationale" class="widefat" rows="10"><?php echo esc_textarea($reject_rationale); ?></textarea>
+    <p style="margin-bottom: 0;">
+        <input id="mn-reject-draft" name="mn-reject-draft" type="checkbox">
+        <label for="mn-reject-draft"><?php _e('Allow author to edit and resubmit', 'textdomain'); ?></label>
+    </p>
 </div>
 <div>
     <p style="float:left">
@@ -453,7 +457,7 @@ class Display {
         // if ( current_user_can( 'delete_post', $post_id ) ) {
         if ( $can_publish && ($post->post_status === 'pending' || !$user_is_author) ) {
             // Show rejection button and dialog
-            preg_match('/^REASON FOR REJECTION:\n([\s\S]*?)\n---\n\n/', $post->post_content, $reject_rationale_matches);  // extract rejection rationale
+            preg_match('/^REASON FOR REJECTION:\r?\n([\s\S]*?)\r?\n---\r?\n\r?\n/', $post->post_content, $reject_rationale_matches);  // extract rejection rationale
             $reject_rationale = $reject_rationale_matches[1];
             ?>
             <button type="button" class="button submitdelete" id="mn-show-reject-dialog"><?php _e( 'Reject', 'textdomain' ); ?></button>

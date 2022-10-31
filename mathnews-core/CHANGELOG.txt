@@ -1,3 +1,9 @@
+== 1.2.2 ==
+
+- Fixed resubmitted rejected articles keeping their rejected status when they shouldn't have
+- Fixed rejection rationale not showing in rejection dialog
+- Added checkbox in rejection dialog to allow authors to edit and resubmit their rejected articles
+
 == 1.2.1 ==
 
 - Fixed multiple helpful links being parsed/rendered incorrectly
