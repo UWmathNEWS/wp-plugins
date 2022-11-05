@@ -46,6 +46,13 @@ class Mathnews_Core_Admin {
 	private $version;
 
 	/**
+	 * Settings class
+	 * 
+	 * @since    1.3.0
+	 */
+	private Settings $settings;
+
+	/**
 	 * Enable or disable AB tests
 	 *
 	 * @since 1.0.0
@@ -77,6 +84,10 @@ class Mathnews_Core_Admin {
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
+
+		Utils::require(__FILE__, 'class-mathnews-core-settings.php');
+
+		$this->settings = new Settings(Consts\CORE_SETTINGS_SLUG, _('mathNEWS Settings', 'textdomain'));
 
 		Utils::require(__FILE__, 'partials/class-mathnews-core-admin-display.php');
 	}
@@ -208,25 +219,24 @@ class Mathnews_Core_Admin {
 	 * @since 1.2.0
 	 */
 	public function register_settings() {
-		register_setting(Consts\CORE_SETTINGS_SLUG, Consts\HELPFUL_LINKS_OPTION_NAME);
+		$this->settings->add_section('general', 'General');
 
-		add_settings_section(
-			Consts\CORE_SETTINGS_SLUG . '-general',
-			'General',
-			false,
-			Consts\CORE_SETTINGS_SLUG
-		);
-
-		add_settings_field(
-			Consts\HELPFUL_LINKS_OPTION_NAME . '-input',
+		$this->settings->general->register(
+			Consts\HELPFUL_LINKS_OPTION_NAME,
 			__('Helpful links', 'textdomain'),
-			Display::render_settings_textarea_field(Consts\HELPFUL_LINKS_OPTION_NAME, '', [
-				'description' => 'Shown in the post writing screen. One link per line, in the format <code>URL link_title</code>'
-			]),
-			Consts\CORE_SETTINGS_SLUG,
-			Consts\CORE_SETTINGS_SLUG . '-general',
-			['label_for' => Consts\HELPFUL_LINKS_OPTION_NAME]
+			'textarea',
+			'',
+			['description' => 'Shown in the post writing screen. One link per line, in the format <code>URL link_title</code>']
 		);
+
+		/**
+		 * Allow for registration of additional settings to the mathNEWS settings screen
+		 * 
+		 * @since 1.3.0
+		 */
+		do_action('mathnews-core:add_settings', $this->settings);
+
+		$this->settings->run();
 	}
 
 	/**
@@ -236,7 +246,7 @@ class Mathnews_Core_Admin {
 	 */
 	public function add_settings_screen() {
 		add_options_page(__('mathNEWS Settings', 'textdomain'), __('mathNEWS Settings', 'textdomain'), 'manage_options',
-			Consts\CORE_SETTINGS_SLUG, array(Display::class, 'render_settings_screen'));
+			$this->settings->slug, array($this->settings, 'render'));
 	}
 
 	/**
