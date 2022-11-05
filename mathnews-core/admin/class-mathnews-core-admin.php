@@ -296,6 +296,12 @@ class Mathnews_Core_Admin {
 	 */
 	public function remove_quick_draft_widget()	{
 		remove_meta_box('dashboard_quick_press', 'dashboard', 'normal');
+		if (current_user_can('manage_options')) {
+			$cur_issue = get_option(Consts\CURRENT_ISSUE_OPTION_NAME, Consts\CURRENT_ISSUE_OPTION_DEFAULT);
+			$cur_tag = "v${cur_issue[0]}i${cur_issue[1]}";
+			$title = sprintf(__('Authors for %s', 'textdomain'), $cur_tag);
+			add_meta_box('mn-authors', $title, array(Display::class, 'render_current_issue_authors_meta_box'), 'dashboard', 'normal');
+		}
 	}
 
 	/**
@@ -387,7 +393,13 @@ class Mathnews_Core_Admin {
 	 */
 	public function link_to_pending() {
 		add_submenu_page('edit.php', __('Pending') . ' ' . __('Posts'), __('Pending') . ' ' . __('Posts'),
-			'edit_others_posts', admin_url('edit.php?post_status=pending&post_type=post&orderby=date&order=desc'),
+			'edit_others_posts',
+			add_query_arg([
+				'post_status' => 'pending',
+				'post_type' => 'post',
+				'orderby' => 'date',
+				'order' => 'desc',
+			], admin_url('edit.php')),
 			'', 1);
 	}
 
@@ -424,6 +436,89 @@ class Mathnews_Core_Admin {
 	}
 
 	/**
+	 * Show the pseudonym used on an article in the author column of the posts table
+	 * 
+	 * @since 1.3.0
+	 * @uses the_author
+	 */
+	public function show_pseudonym_as_author($display_name) {
+		global $post;
+		$nickname = get_post_meta($post->ID, Consts\AUTHOR_META_KEY_NAME, true) ?: $display_name;
+
+		if (current_user_can('manage_options')) {
+			$cur_issue = get_option(Consts\CURRENT_ISSUE_OPTION_NAME, Consts\CURRENT_ISSUE_OPTION_DEFAULT);
+			$cur_tag = "v${cur_issue[0]}i${cur_issue[1]}";
+			$count = count(get_posts([
+				'numberposts' => -1,
+				'post_status' => 'any',
+				'author' => $post->post_author,
+				'tag' => $cur_tag,
+			]));
+
+			$html = esc_html($nickname);
+			$html .= '<details>';
+			// <a> here ensures that the <summary> is clickable
+			$html .= '<summary><a><em>' . $display_name . ' (' . $count . ')</em></a></summary>'; 
+			$html .= '<a href="' . get_edit_user_link($post->post_author) . '">Edit user profile</a>';
+			$html .= '</details>';
+			return $html;
+		} elseif (current_user_can('edit_others_posts') || $post->post_author == get_current_user_id()) {
+			return esc_html($nickname) . ' <em>(' . $display_name . ')</em>';
+		}
+
+		// user doesn't have editing privileges, so we only show the pseudonym.
+		// echo here will output text without wrapping it in a link to all of the author's posts, to preserve privacy
+		echo esc_html($nickname);
+		return null;
+	}
+
+	/**
+	 * Email an author if their post was rejected
+	 * 
+	 * @since 1.3.0
+	 */
+	private function notify_author_on_reject($post, $reject_rationale, $show_edit_link = false) {
+		$authordata = get_userdata($post->post_author);
+		if (!$authordata) return false;
+
+		$domain = substr(site_url('', 'http'), 7);
+		$to = $authordata->user_email;
+		$subject = '[' . get_bloginfo('name') . '] Rejection Notice';
+		$headers = [
+			'From: ' . sprintf('%s <noreply@%s>', get_bloginfo('name'), $domain),
+			'Reply-To: ' . get_bloginfo('admin_email'),
+		];
+
+		$title = $post->post_title;
+		$edit_message = '';
+		$reject_rationale = wordwrap($reject_rationale, 72, '\n\t');
+		$author_name = $authordata->first_name;
+
+		if ($show_edit_link) {
+			$edit_link = get_edit_post_link($post, '&');
+			$edit_message = <<<MSG
+
+You may edit and resubmit your article by visiting the following link:
+$edit_link
+
+MSG;
+		}
+
+		$message = <<<MSG
+Hello $author_name,
+
+Your article "$title" was rejected for the following reason:
+
+	$reject_rationale
+$edit_message
+Regards,
+The mathNEWS Editors
+MSG;
+		
+		return wp_mail($to, $subject, $message, $headers);
+	}
+
+	/**
 	 * Handle post approvals and rejections
 	 *
 	 * @since 1.0.0
@@ -448,6 +543,13 @@ class Mathnews_Core_Admin {
 			$rejected_cat = get_cat_ID(Consts\REJECTED_CAT_NAME);
 
 			wp_set_post_categories($post_id, $rejected_cat);
+
+			if (isset($_POST['mn-reject-email'])) {
+				$reject_rationale = isset($_POST['mn-reject-rationale']) ? $_POST['mn-reject-rationale'] : '';
+				
+				// TODO: add error interface
+				$this->notify_author_on_reject($post, $reject_rationale, $_POST['mn-reject-draft'] ?? 0);
+			}
 		} elseif ($is_approved) {
 			$approved_cat = get_cat_ID(Consts\APPROVED_CAT_NAME);
 
@@ -476,7 +578,7 @@ class Mathnews_Core_Admin {
 			return $data;
 		}
 
-		$original_content = preg_replace('/^REASON FOR REJECTION:[\s\S]*?---\r?\n\r?\n/', '', $data['post_content']);
+		$original_content = preg_replace('/^REASON FOR REJECTION:[\s\S]*?---(\r?\n\r?\n)?/', '', $data['post_content']);
 
 		$data['post_content'] = "REASON FOR REJECTION:\n" . esc_html($reject_rationale) . "\n---\n\n" . $original_content;
 

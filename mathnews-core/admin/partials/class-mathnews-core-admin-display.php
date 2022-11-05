@@ -191,9 +191,13 @@ class Display {
 <div>
     <p>Please state why this article is being rejected.</p>
     <textarea id="mn-reject-rationale" name="mn-reject-rationale" class="widefat" rows="10"><?php echo esc_textarea($reject_rationale); ?></textarea>
-    <p style="margin-bottom: 0;">
+    <p>
         <input id="mn-reject-draft" name="mn-reject-draft" type="checkbox">
         <label for="mn-reject-draft"><?php _e('Allow author to edit and resubmit', 'textdomain'); ?></label>
+    </p>
+    <p style="margin-bottom: 0;">
+        <input id="mn-reject-email" name="mn-reject-email" type="checkbox" checked>
+        <label for="mn-reject-email"><?php _e('Notify author of rejection', 'textdomain'); ?></label>
     </p>
 </div>
 <div>
@@ -241,6 +245,35 @@ class Display {
     <li><a href="#repeat-tour" onclick="window.mathNEWSShowOnboarding();return false">Repeat onboarding tour</a></li>
 </ul>
         <?php
+    }
+
+    /**
+     * Renders a meta box containing all users who submitted posts to the current issue
+     * 
+     * @since 1.3.0
+     */
+    static public function render_current_issue_authors_meta_box() {
+        $cur_issue = get_option(Consts\CURRENT_ISSUE_OPTION_NAME, Consts\CURRENT_ISSUE_OPTION_DEFAULT);
+        $cur_tag = "v${cur_issue[0]}i${cur_issue[1]}";
+        $posts = get_posts([
+            'numberposts' => -1,
+            'post_status' => 'any',
+            'tag' => $cur_tag,
+        ]);
+        $authors = [];
+        
+        foreach ($posts as $post) {
+            $pseudonym = get_post_meta($post->ID, Consts\AUTHOR_META_KEY_NAME, true);
+            $authors[$pseudonym] = ($authors[$pseudonym] ?? 0) + 1;
+        }
+        
+        ksort($authors);
+        
+        foreach ($authors as $pseudonym => $count) {
+            ?>
+<p><label><input type="checkbox"> <?php echo esc_html($pseudonym); ?> (<?php echo $count; ?>)</label></p>
+            <?php
+        }
     }
 
 	/**
@@ -457,7 +490,7 @@ class Display {
         // if ( current_user_can( 'delete_post', $post_id ) ) {
         if ( $can_publish && ($post->post_status === 'pending' || !$user_is_author) ) {
             // Show rejection button and dialog
-            preg_match('/^REASON FOR REJECTION:\r?\n([\s\S]*?)\r?\n---\r?\n\r?\n/', $post->post_content, $reject_rationale_matches);  // extract rejection rationale
+            preg_match('/^REASON FOR REJECTION:\r?\n([\s\S]*?)\r?\n---(\r?\n\r?\n)?/', $post->post_content, $reject_rationale_matches);  // extract rejection rationale
             $reject_rationale = $reject_rationale_matches[1];
             ?>
             <button type="button" class="button submitdelete" id="mn-show-reject-dialog"><?php _e( 'Reject', 'textdomain' ); ?></button>
