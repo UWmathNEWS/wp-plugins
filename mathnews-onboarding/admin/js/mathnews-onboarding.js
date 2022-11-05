@@ -269,4 +269,47 @@ Make sure the issue listed is the one you want to submit your article for!</p>
 		mathNEWSShowOnboarding();
 	}
 
+	//
+	// Additional temporary modals
+	//
+
+	if (mn_onboarding.temporaryTour !== null) {
+		const tempTour = new Shepherd.Tour({
+			defaultStepOptions: {
+				popperOptions: {
+					modifiers: [
+						{
+							name: 'offset',
+							options: {
+								offset: [0, 20],
+							},
+						},
+					],
+				},
+			},
+			useModalOverlay: true,
+		});
+
+		tempTour.addStep({
+			id: 'temporary-tour',
+			title: mn_onboarding.temporaryTour.title,
+			text: mn_onboarding.temporaryTour.text,
+			attachTo: mn_onboarding.temporaryTour.attachTo,
+			buttons: [{
+				action() {
+					return this.cancel();
+				},
+				text: mn_onboarding.temporaryTour.buttons?.text || 'Got it!'
+			}],
+		});
+
+		tempTour.on('cancel', () => {
+			document.cookie = 'mn-seen-temp-tour=1;max-age=172800;samesite=strict';
+		});
+
+		if (!mn_onboarding.showOnboarding && !document.cookie.includes('mn-seen-temp-tour')) {
+			tempTour.start();
+		}
+	}
+
 })(jQuery);
