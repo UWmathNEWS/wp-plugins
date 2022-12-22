@@ -152,6 +152,10 @@ class Mathnews_Core {
 			// create categories needed
 			$this->loader->add_action('admin_init', $plugin_admin, 'create_categories');
 
+			// set phpmailer config
+			$this->loader->add_action('phpmailer_init', $plugin_admin, 'phpmailer_init');
+			$this->loader->add_action('wp_mail_failed', $plugin_admin, 'phpmailer_error_handler');
+
 			// register settings screen
 			$this->loader->add_action('admin_menu', $plugin_admin, 'add_settings_screen');
 			$this->loader->add_action('admin_init', $plugin_admin, 'register_settings');

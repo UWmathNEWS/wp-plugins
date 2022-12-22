@@ -65,8 +65,12 @@ class SettingsField {
 	}
 
 	private function render_text_field() {
+		$field_type = $this->args['type'] ?? 'text';
+		if (in_array($field_type, ['button', 'checkbox', 'file', 'image', 'radio', 'reset', 'submit'])) {
+			$field_type = 'text';
+		}
 		$mandatory_attrs = [
-			'type'  => 'text',
+			'type'  => $field_type,
 			'name'  => esc_attr($this->id),
 			'value' => esc_attr(get_option($this->id, $this->default)),
 		];
@@ -76,7 +80,25 @@ class SettingsField {
 		];
 		$attrs = array_merge($default_attrs, $this->args['attrs'] ?? [], $mandatory_attrs);
 
+		// disable autocomplete for password fields
+		if ($field_type === 'password') {
+			$attrs['autocomplete'] = 'off';
+		}
+
 		echo sprintf('<input %s />', Utils::build_attrs_from_array($attrs));
+
+		if ($field_type === 'password') {
+			// show password hide/show
+			$btn_attrs = [
+				'type' => 'button',
+				'class' => 'button mn-pwd-visibility-toggle wp-hide-pw hide-if-no-js',
+				'aria-label' => 'Show password',
+				'aria-controls' => esc_attr($this->id) . '-input',
+			];
+			echo sprintf('<button %s><span class="dashicons dashicons-visibility" aria-hidden="true"></span> <span class="text">Show</span></button>',
+									 Utils::build_attrs_from_array($btn_attrs));
+		}
+
 		if (!empty($this->args['description'])) {
 			echo '<p class="description">' . $this->args['description'] . '</p>';
 		}

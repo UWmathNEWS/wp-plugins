@@ -231,15 +231,47 @@ class Mathnews_Core_Admin {
 	}
 
 	/**
+	 * Set PHPMailer config
+	 *
+	 * @since 1.3.0
+	 * @uses phpmailer_init
+	 */
+	public function phpmailer_init($mailer)	{
+		if (get_option('mn_email_smtp_use', ['off'])[0] === 'on') {
+			$mailer->isSMTP();
+			$mailer->Host = get_option('mn_email_smtp_config__host', '');
+			$mailer->Port = get_option('mn_email_smtp_config__port', '');
+			$mailer->Username = get_option('mn_email_smtp_config__username', '');
+			$mailer->Password = get_option('mn_email_smtp_config__password', '');
+			$mailer->setFrom(get_option('mn_email_smtp_config__from', ''));
+			$mailer->SMTPDebug = 1;
+			$mailer->SMTPAuth = true;
+			$mailer->SMTPSecure = 'tls';
+			$mailer->CharSet = 'utf-8';
+		}
+	}
+
+	/**
+	 * Catch PHPMailer errors
+	 *
+	 * @since 1.3.0
+	 * @uses wp_mail_failed
+	 */
+	public function phpmailer_error_handler($error)	{
+		global $phpmailer;
+		wp_die(var_dump(get_option('mn_email_smtp_use')));
+	}
+
+	/**
 	 * Register settings options
 	 *
 	 * @since 1.2.0
 	 */
 	public function register_settings() {
-		$this->settings->add_section('general', 'General')
+		$this->settings->add_section('admin-notice', 'Admin Notice')
 			->register(
 				'mn_admin_notice_type',
-				__('Admin notice type', 'textdomain'),
+				__('Notice type', 'textdomain'),
 				'select',
 				'none',
 				[
@@ -255,7 +287,7 @@ class Mathnews_Core_Admin {
 			)
 			->register(
 				'mn_admin_notice_text',
-				__('Admin notice text', 'textdomain'),
+				__('Message', 'textdomain'),
 				'editor',
 				'Hello! I\'m an example notice message, please replace me!',
 				[
@@ -275,6 +307,28 @@ class Mathnews_Core_Admin {
 					'attrs' => ['rows' => 5],
 				]
 			);
+
+		$this->settings->add_section('email', 'Email')
+			->register('mn_email_smtp_use', __('External SMTP', 'textdomain'), 'checkbox', ['off'], [
+				'labels' => ['Use external SMTP server'],
+				'attrs' => [['id' => 'mn-use-smtp']],
+			])
+			->register('mn_email_smtp_config__host', __('SMTP server', 'textdomain'), 'text', 'smtp.example.com', [
+				'attrs' => ['data-disabled-by' => '#mn-use-smtp::off'],
+			])
+			->register('mn_email_smtp_config__port', __('Port', 'textdomain'), 'text', '587', [
+				'attrs' => ['data-disabled-by' => '#mn-use-smtp::off'],
+			])
+			->register('mn_email_smtp_config__username', __('Username', 'textdomain'), 'text', 'noreply@localhost', [
+				'attrs' => ['data-disabled-by' => '#mn-use-smtp::off'],
+			])
+			->register('mn_email_smtp_config__password', __('Password', 'textdomain'), 'text', '', [
+				'type'  => 'password',
+				'attrs' => ['data-disabled-by' => '#mn-use-smtp::off'],
+			])
+			->register('mn_email_smtp_config__from', __('From address', 'textdomain'), 'text', 'noreply@localhost', [
+				'attrs' => ['data-disabled-by' => '#mn-use-smtp::off']
+			]);
 
 		/**
 		 * Allow for registration of additional settings to the mathNEWS settings screen

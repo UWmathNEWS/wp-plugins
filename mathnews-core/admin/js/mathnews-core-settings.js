@@ -1,4 +1,5 @@
 jQuery(($) => {
+	// Disable fields based on values of other fields
 	let dependencies = {};
 	$('[data-disabled-by]').each(function () {
 		const [depends, depends_value] = $(this).data('disabled-by').split('::');
@@ -27,4 +28,30 @@ jQuery(($) => {
 		$dep.on('change', listener);
 		listener();
 	}
+
+	// Show/hide passwords in password fields
+	$('.mn-pwd-visibility-toggle').each(function() {
+		const $el = $(this);
+		const $field = $(document.getElementById($el.attr('aria-controls')));
+
+		$el.on('click', () => {
+			const show = $field.attr('type') === 'password';
+			if (show) {
+				$field.attr('type', 'text');
+				$el.children('.dashicons').removeClass('dashicons-visibility').addClass('dashicons-hidden');
+				$el.children('.text').text('Hide');
+				$el.attr('aria-label', 'Hide password');
+			} else {
+				$field.attr('type', 'password');
+				$el.children('.dashicons').removeClass('dashicons-hidden').addClass('dashicons-visibility');
+				$el.children('.text').text('Show');
+				$el.attr('aria-label', 'Show password');
+			}
+		});
+
+		// Prevent browser autocomplete for password fields
+		$el.closest('form').on('submit', () => {
+			$field.attr('type', 'password');
+		});
+	})
 });
