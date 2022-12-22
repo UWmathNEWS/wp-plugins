@@ -155,7 +155,7 @@ class Mathnews_Core_Public {
 			$subtitle = get_post_meta($post_id, Consts\SUBTITLE_META_KEY_NAME, true);
 			if ($subtitle !== '') {
 				// abuse the fact that headings cannot be nested in each other
-				return $title . '<h3 class="entry-subtitle">' . $subtitle . '</h3>';
+				return $title . '<h3 class="entry-subtitle">' . esc_html($subtitle) . '</h3>';
 			}
 		}
 

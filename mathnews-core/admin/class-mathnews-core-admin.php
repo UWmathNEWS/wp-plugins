@@ -46,11 +46,25 @@ class Mathnews_Core_Admin {
 	private $version;
 
 	/**
-	 * Settings class
+	 * General settings class
 	 * 
 	 * @since    1.3.0
 	 */
-	private Settings $settings;
+	private $settings;
+
+	/**
+	 * Current issue settings class
+	 *
+	 * @since 1.3.0
+	 */
+	private $current_issue_settings;
+
+	/**
+	 * Memoized data to be shared between methods
+	 *
+	 * @since 1.3.0
+	 */
+	private $memo;
 
 	/**
 	 * Enable or disable AB tests
@@ -87,7 +101,10 @@ class Mathnews_Core_Admin {
 
 		Utils::require(__FILE__, 'class-mathnews-core-settings.php');
 
-		$this->settings = new Settings(Consts\CORE_SETTINGS_SLUG, _('mathNEWS Settings', 'textdomain'));
+		$this->settings = new Settings(Consts\CORE_SETTINGS_SLUG, __('mathNEWS Settings', 'textdomain'));
+		$this->current_issue_settings = new Settings(Consts\CURRENT_ISSUE_SETTINGS_SLUG, __('Set Current Issue', 'textdomain'));
+
+		$this->memo = [];
 
 		Utils::require(__FILE__, 'partials/class-mathnews-core-admin-display.php');
 	}
@@ -219,15 +236,45 @@ class Mathnews_Core_Admin {
 	 * @since 1.2.0
 	 */
 	public function register_settings() {
-		$this->settings->add_section('general', 'General');
+		$this->settings->add_section('general', 'General')
+			->register(
+				'mn_admin_notice_type',
+				__('Admin notice type', 'textdomain'),
+				'select',
+				'none',
+				[
+					'values' => ['none', 'error', 'warning', 'success', 'info'],
+					'labels' => [
+						'none' => 'Do not show',
+						'error' => 'Error',
+						'warning' => 'Warning',
+						'success' => 'Success',
+						'info' => 'Info'
+					],
+				]
+			)
+			->register(
+				'mn_admin_notice_text',
+				__('Admin notice text', 'textdomain'),
+				'editor',
+				'Hello! I\'m an example notice message, please replace me!',
+				[
+					'editor' => ['textarea_rows' => 5, 'wpautop' => false],
+					'attrs'  => ['data-disabled-by' => '#mn_admin_notice_type-input::none']
+				]
+			);
 
-		$this->settings->general->register(
-			Consts\HELPFUL_LINKS_OPTION_NAME,
-			__('Helpful links', 'textdomain'),
-			'textarea',
-			'',
-			['description' => 'Shown in the post writing screen. One link per line, in the format <code>URL link_title</code>']
-		);
+		$this->settings->add_section('writing', 'Writing')
+			->register(
+				Consts\HELPFUL_LINKS_OPTION_NAME,
+				__('Helpful links', 'textdomain'),
+				'textarea',
+				'',
+				[
+					'description' => 'Shown in the post writing screen. One link per line, in the format <code>URL link_title</code>.',
+					'attrs' => ['rows' => 5],
+				]
+			);
 
 		/**
 		 * Allow for registration of additional settings to the mathNEWS settings screen
@@ -245,8 +292,19 @@ class Mathnews_Core_Admin {
 	 * @since 1.2.0
 	 */
 	public function add_settings_screen() {
-		add_options_page(__('mathNEWS Settings', 'textdomain'), __('mathNEWS Settings', 'textdomain'), 'manage_options',
-			$this->settings->slug, array($this->settings, 'render'));
+		$this->settings->render_screen();
+	}
+
+	/**
+	 * Enqueue scripts for the settings screen
+	 *
+	 * @since 1.3.0
+	 */
+	public function enqueue_settings_scripts() {
+		if (get_current_screen()->base === 'settings_page_' . Consts\CORE_SETTINGS_SLUG) {
+			wp_enqueue_script( $this->plugin_name . Consts\CORE_SETTINGS_SLUG,
+				plugin_dir_url( __FILE__ ) . 'js/mathnews-core-settings.js', ['jquery'], $this->version, true );
+		}
 	}
 
 	/**
@@ -255,22 +313,33 @@ class Mathnews_Core_Admin {
 	 * @since 1.0.0
 	 */
 	public function register_current_issue_settings() {
-		register_setting(Consts\CURRENT_ISSUE_SETTINGS_SLUG, Consts\CURRENT_ISSUE_OPTION_NAME);
-
-		add_settings_section(
-			Consts\CURRENT_ISSUE_SETTINGS_SLUG . '-settings',
-			'',
-			array(Display::class, 'render_current_issue_settings_description'),
-			Consts\CURRENT_ISSUE_SETTINGS_SLUG
-		);
-
-		add_settings_field(
-			Consts\CURRENT_ISSUE_OPTION_NAME . '-input',
+		$s = $this->current_issue_settings->add_section('settings', '', array(Display::class, 'render_current_issue_settings_description'));
+		$s->register(
+			Consts\CURRENT_ISSUE_OPTION_NAME,
 			__('Current volume and issue', 'textdomain'),
 			array(Display::class, 'render_current_issue_settings_fields'),
-			Consts\CURRENT_ISSUE_SETTINGS_SLUG,
-			Consts\CURRENT_ISSUE_SETTINGS_SLUG . '-settings'
+			Consts\CURRENT_ISSUE_OPTION_DEFAULT
 		);
+
+		$cur_issue = get_option(Consts\CURRENT_ISSUE_OPTION_NAME, Consts\CURRENT_ISSUE_OPTION_DEFAULT);
+		$cur_tag = "v${cur_issue[0]}i${cur_issue[1]}";
+
+		$s->register(
+			Consts\CURRENT_ISSUE_OPTION_NAME . '_change',
+			__(''),
+			'checkbox',
+			['off'],
+			[
+				'labels' => [sprintf(__('Move all posts tagged as %s to draft status'), "<code>$cur_tag</code>")],
+				'dummy' => true,
+				'attrs' => [
+					'id'       => 'current-issue-tag-return',
+					'disabled' => true,
+				],
+			]
+		);
+
+		$this->current_issue_settings->run();
 	}
 
 	/**
@@ -291,7 +360,35 @@ class Mathnews_Core_Admin {
 	public function enqueue_current_issue_settings_scripts() {
 		if (get_current_screen()->base === 'posts_page_' . Consts\CURRENT_ISSUE_SETTINGS_SLUG) {
 			wp_enqueue_script( $this->plugin_name . Consts\CURRENT_ISSUE_SETTINGS_SLUG,
-				plugin_dir_url( __FILE__ ) . 'js/mathnews-core-set-current-issue.js', ['jquery'], $this->version, true );
+				plugin_dir_url( __FILE__ ) . 'js/mathnews-core-set-current-issue.js', ['jquery', 'wp-tinymce'], $this->version, true );
+		}
+	}
+
+	/**
+	 * Change status of pending posts for the given tag to draft
+	 *
+	 * @since 1.3.0
+	 * @uses update_option_${Consts\CURRENT_ISSUE_OPTION_NAME}
+	 */
+	public function move_current_issue_pending_to_draft($cur_issue) {
+		global $wpdb;
+
+		if ($_POST[Consts\CURRENT_ISSUE_OPTION_NAME . '_change']) {
+			$cur_tag = "v{$cur_issue[0]}i{$cur_issue[1]}";
+
+			// Unfortunately, this fires before the Wordpress posts query is initialized, so we cannot use get_posts, nor can
+			// we use WP_Query. Hence, we are forced to make a direct DB query to update the post status.
+			$wpdb->query(
+				$wpdb->prepare(
+					"UPDATE {$wpdb->posts} AS p
+						INNER JOIN {$wpdb->term_relationships} AS r ON (r.object_id = p.ID)
+						INNER JOIN {$wpdb->term_taxonomy} AS tx ON (tx.term_taxonomy_id = r.term_taxonomy_id)
+						INNER JOIN {$wpdb->terms} AS t ON (t.term_id = tx.term_id)
+					SET p.post_status = %s
+						WHERE p.post_status = %s AND p.post_type = %s AND t.name = %s",
+					['draft', 'pending', 'post', $cur_tag]
+				)
+			);
 		}
 	}
 
@@ -501,7 +598,7 @@ class Mathnews_Core_Admin {
 
 		$title = $post->post_title;
 		$edit_message = '';
-		$reject_rationale = wordwrap($reject_rationale, 72, '\n\t');
+		$reject_rationale = wordwrap(stripslashes($reject_rationale), 72, "\n\t");
 		$author_name = $authordata->first_name;
 
 		if ($show_edit_link) {
@@ -554,11 +651,15 @@ MSG;
 
 			wp_set_post_categories($post_id, $rejected_cat);
 
+			if (isset($_POST['mn-reject-draft'])) {
+				wp_set_post_tags($post_id, []);
+			}
+
 			if (isset($_POST['mn-reject-email'])) {
 				$reject_rationale = isset($_POST['mn-reject-rationale']) ? $_POST['mn-reject-rationale'] : '';
 				
 				// TODO: add error interface
-				$this->notify_author_on_reject($post, $reject_rationale, $_POST['mn-reject-draft'] ?? 0);
+				$this->notify_author_on_reject($post, wp_strip_all_tags($reject_rationale), $_POST['mn-reject-draft'] ?? 0);
 			}
 		} elseif ($is_approved) {
 			$approved_cat = get_cat_ID(Consts\APPROVED_CAT_NAME);
@@ -590,7 +691,7 @@ MSG;
 
 		$original_content = preg_replace('/^REASON FOR REJECTION:[\s\S]*?---(\r?\n\r?\n)?/', '', $data['post_content']);
 
-		$data['post_content'] = "REASON FOR REJECTION:\n" . esc_html($reject_rationale) . "\n---\n\n" . $original_content;
+		$data['post_content'] = "REASON FOR REJECTION:\n" . wp_strip_all_tags($reject_rationale) . "\n---\n\n" . $original_content;
 
 		return $data;
 	}
@@ -640,7 +741,7 @@ MSG;
 		$post_type = $post->post_type;
 		$post_type_object = get_post_type_object($post_type);
 		$can_edit = current_user_can($post_type_object->cap->edit_post, $post_id);
-		$new_subtitle = isset($_POST['mn_subtitle']) ? sanitize_text_field($_POST['mn_subtitle']) : '';
+		$new_subtitle = isset($_POST['mn_subtitle']) ? $_POST['mn_subtitle'] : '';
 
 		if ($post_type !== Consts\POST_TYPE || !$can_edit) {
 			return $post_id;
@@ -670,7 +771,7 @@ MSG;
 		$post_type = $post->post_type;
 		$post_type_object = get_post_type_object($post_type);
 		$can_edit = current_user_can($post_type_object->cap->edit_post, $post_id);
-		$new_author = isset($_POST['mn_author']) ? sanitize_text_field($_POST['mn_author']) : get_the_author_meta('nickname', $post->post_author);
+		$new_author = isset($_POST['mn_author']) ? $_POST['mn_author'] : get_the_author_meta('nickname', $post->post_author);
 
 		if ($post_type !== Consts\POST_TYPE || !$can_edit) {
 			return $post_id;
@@ -870,5 +971,18 @@ MSG;
 		if (!self::is_B()) { return; }
 
 		Display::feedback_notice();
+	}
+
+	/**
+	 * Display an admin notice for users
+	 *
+	 * @since 1.3.0
+	 */
+	public function admin_notice() {
+		$notice_type = get_option('mn_admin_notice_type', 'none');
+
+		if ($notice_type === 'none') { return; }
+
+		Display::admin_notice();
 	}
 }

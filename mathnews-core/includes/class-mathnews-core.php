@@ -155,11 +155,13 @@ class Mathnews_Core {
 			// register settings screen
 			$this->loader->add_action('admin_menu', $plugin_admin, 'add_settings_screen');
 			$this->loader->add_action('admin_init', $plugin_admin, 'register_settings');
+			$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_settings_scripts');
 
 			// register screen to set the current issue
 			$this->loader->add_action('admin_menu', $plugin_admin, 'add_current_issue_settings_screen');
 			$this->loader->add_action('admin_init', $plugin_admin, 'register_current_issue_settings');
 			$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_current_issue_settings_scripts');
+			$this->loader->add_action('update_option_' . Consts\CURRENT_ISSUE_OPTION_NAME, $plugin_admin, 'move_current_issue_pending_to_draft');
 
 			// remove quick draft widget from dashboard
 			$this->loader->add_action('admin_init', $plugin_admin, 'remove_quick_draft_widget');
@@ -197,9 +199,15 @@ class Mathnews_Core {
 			$this->loader->add_filter('quick_edit_show_taxonomy', $plugin_admin, 'remove_categories_from_quickedit', 10, 3);
 			$this->loader->add_filter('post_row_actions', $plugin_admin, 'modify_post_row_actions', 10, 2);
 
+			// Show pseudonym instead of display name
+			$this->loader->add_filter('the_author', $plugin_admin, 'show_pseudonym_as_author');
+
 			// AB tests
 			$this->loader->add_filter('the_author', $plugin_admin, 'filter_author_AB');
 			$this->loader->add_action('admin_notices', $plugin_admin, 'feedback_notice');
+
+			// Show admin notice to all users
+			$this->loader->add_action('admin_notices', $plugin_admin, 'admin_notice');
 		}
 	}
 

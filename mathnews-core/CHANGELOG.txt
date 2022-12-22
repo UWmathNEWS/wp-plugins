@@ -1,3 +1,13 @@
+== 1.3.0 ==
+
+- Fixed spurious escaping and sanitization in several places
+- Added a generic Settings class for creating simple, customizable settings pages
+- Added meta box to dashboard showing list of authors for current issue
+- Added option to email authors on article rejection
+- Added option to return pending articles to drafts when updating the current issue tag
+- Changed article rejection to also strip tags, for ease of resubmission
+- Changed posts list table to show author pseudonyms instead of WordPress display names
+
 == 1.2.2 ==
 
 - Fixed resubmitted rejected articles keeping their rejected status when they shouldn't have

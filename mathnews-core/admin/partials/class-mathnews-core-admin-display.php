@@ -17,65 +17,6 @@ namespace Mathnews\WP\Core\Admin\Partials;
 use Mathnews\WP\Core\Consts;
 
 class Display {
-    /**
-     * Renders the plugin settings screen
-     *
-     * @since 1.2.0
-     */
-    static public function render_settings_screen() {
-        ?>
-<div class="wrap">
-    <h1><?php _e('mathNEWS Settings', 'textdomain'); ?></h1>
-    <form action="options.php" method="post">
-        <?php
-        settings_fields(Consts\CORE_SETTINGS_SLUG);
-        do_settings_sections(Consts\CORE_SETTINGS_SLUG);
-        ?>
-        <button type="submit" name="submit" id="submit" class="button button-primary button-large">
-            <?php _e('Save Changes'); ?>
-        </button>
-    </form>
-</div>
-        <?php
-    }
-
-    /**
-     * General function to render a plugin setting text field
-     *
-     * @since 1.2.0
-     */
-    static public function render_settings_text_field($option_name, $default = '', $args = []) {
-        return function() use ($option_name, $default, $args) {
-            ?>
-<input type="text" id="<?php echo esc_attr($option_name); ?>" name="<?php echo esc_attr($option_name); ?>"
-    value="<?php echo esc_attr(get_option($option_name), $default); ?>" size="30" />
-            <?php
-            if (!empty($args['description'])) {
-                ?>
-<p class="description"><?php echo $args['description']; ?></p>
-                <?php
-            }
-        };
-    }
-
-    /**
-     * General function to render a plugin setting textarea field
-     *
-     * @since 1.2.0
-     */
-    static public function render_settings_textarea_field($option_name, $default = '', $args = []) {
-        return function() use ($option_name, $default, $args) {
-            ?>
-<textarea id="<?php echo esc_attr($option_name); ?>" name="<?php echo esc_attr($option_name); ?>" class="large-text"><?php echo esc_html(get_option($option_name), $default); ?></textarea>
-            <?php
-            if (!empty($args['description'])) {
-                ?>
-<p class="description"><?php echo $args['description']; ?></p>
-                <?php
-            }
-        };
-    }
-
 	/**
 	 * Renders a screen to set the current issue
 	 *
@@ -95,7 +36,7 @@ class Display {
         ?>
         <button type="submit" name="submit" id="submit" class="button button-primary button-large">
             Set current issue tag to
-            <code><span id="current-issue-tag"><?php echo esc_html("{$cur_issue[0]}i{$cur_issue[1]}"); ?></span></code>
+            <code><span id="current-issue-tag"><?php echo esc_html("v{$cur_issue[0]}i{$cur_issue[1]}"); ?></span></code>
         </button>
     </form>
 </div>
@@ -121,9 +62,8 @@ class Display {
 	 *
 	 * @since 1.0.0
 	 */
-	static public function render_current_issue_settings_fields() {
-		$option_name = Consts\CURRENT_ISSUE_OPTION_NAME;  // for brevity
-		$cur_issue = get_option($option_name, Consts\CURRENT_ISSUE_OPTION_DEFAULT);  // [volume_num, issue_num]
+	static public function render_current_issue_settings_fields($option_name, $default, $args) {
+		$cur_issue = get_option($option_name, $default);  // [volume_num, issue_num]
 		?>
 <label for="current-issue-tag-volume">Volume</label>
 <input type="text" id="current-issue-tag-volume" name="<?php echo esc_attr($option_name); ?>[0]" value="<?php echo esc_attr($cur_issue[0]); ?>" size="3" />
@@ -193,7 +133,7 @@ class Display {
     <textarea id="mn-reject-rationale" name="mn-reject-rationale" class="widefat" rows="10"><?php echo esc_textarea($reject_rationale); ?></textarea>
     <p>
         <input id="mn-reject-draft" name="mn-reject-draft" type="checkbox">
-        <label for="mn-reject-draft"><?php _e('Allow author to edit and resubmit', 'textdomain'); ?></label>
+        <label for="mn-reject-draft"><?php _e('Allow author to edit and resubmit (will untag article)', 'textdomain'); ?></label>
     </p>
     <p style="margin-bottom: 0;">
         <input id="mn-reject-email" name="mn-reject-email" type="checkbox" checked>
@@ -242,7 +182,13 @@ class Display {
             <?php
         }
     ?>
+    <?php
+        if (get_option('mn_helpful_links_show_onboarding', ['on'])[0] === 'on') {
+            ?>
     <li><a href="#repeat-tour" onclick="window.mathNEWSShowOnboarding();return false">Repeat onboarding tour</a></li>
+            <?php
+        }
+    ?>
 </ul>
         <?php
     }
@@ -266,12 +212,13 @@ class Display {
             $pseudonym = get_post_meta($post->ID, Consts\AUTHOR_META_KEY_NAME, true);
             $authors[$pseudonym] = ($authors[$pseudonym] ?? 0) + 1;
         }
-        
-        ksort($authors);
-        
-        foreach ($authors as $pseudonym => $count) {
+
+        $pseudonyms = array_keys($authors);
+        natcasesort($pseudonyms);
+
+        foreach ($pseudonyms as $pseudonym) {
             ?>
-<p><label><input type="checkbox"> <?php echo esc_html($pseudonym); ?> (<?php echo $count; ?>)</label></p>
+<p><label><input type="checkbox"> <?php echo esc_html($pseudonym); ?> (<?php echo $authors[$pseudonym]; ?>)</label></p>
             <?php
         }
     }
@@ -290,6 +237,21 @@ class Display {
 </div>
 		<?php
 	}
+
+    /**
+     * Renders an admin notice
+     *
+     * @since 1.3.0
+     */
+    static public function admin_notice() {
+        $notice_type = get_option('mn_admin_notice_type', 'info');
+        $notice_text = get_option('mn_admin_notice_text', '');
+        ?>
+<div class="notice notice-<?php echo esc_attr($notice_type); ?>">
+    <?php echo $notice_text; ?>
+</div>
+        <?php
+    }
 
 	/**
 	 * Renders our custom publish meta box
@@ -471,7 +433,7 @@ class Display {
     ?>
     <div id="mn-authorwrap">
         <label for="mn-author"><?php _e('Pseudonym', 'textdomain'); ?>:</label>
-        <input type="text" name="mn_author" id="mn-author" value="<?php echo esc_attr($author_pseudonym); ?>" <?php echo ($can_edit_post ? '' : 'disabled '); ?> />
+        <input type="text" name="mn_author" id="mn-author" value="<?php echo esc_textarea($author_pseudonym); ?>" <?php disabled(!$can_edit_post); ?> />
     </div>
     <?php
     /**

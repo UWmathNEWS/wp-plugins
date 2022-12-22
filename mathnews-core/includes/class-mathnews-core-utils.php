@@ -44,4 +44,22 @@ class Utils {
 	static public function require_core($path) {
 		self::require(__FILE__, $path);
 	}
+
+	/**
+	 * Build HTML attributes
+	 *
+	 * @since 1.3.0
+	 * @param array $arr An array of attribute keys to values
+	 */
+	static public function build_attrs_from_array($arr) {
+		if (empty($arr)) { return ''; }
+
+		$str = '';
+		foreach ($arr as $key => $value) {
+			if (!empty($value) && $value !== false) {
+				$str .= ' ' . $key . '="' . esc_attr($value) . '"';
+			}
+		}
+		return $str;
+	}
 }
