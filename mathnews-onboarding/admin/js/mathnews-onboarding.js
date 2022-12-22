@@ -273,7 +273,7 @@ Make sure the issue listed is the one you want to submit your article for!</p>
 	// Additional temporary modals
 	//
 
-	if (mn_onboarding.temporaryTour !== null) {
+	if (mn_onboarding.temporaryTour) {
 		const tempTour = new Shepherd.Tour({
 			defaultStepOptions: {
 				popperOptions: {
@@ -299,7 +299,7 @@ Make sure the issue listed is the one you want to submit your article for!</p>
 				action() {
 					return this.cancel();
 				},
-				text: mn_onboarding.temporaryTour.buttons?.text || 'Got it!'
+				text: mn_onboarding.temporaryTour.buttonText || 'Got it!'
 			}],
 		});
 
@@ -307,7 +307,7 @@ Make sure the issue listed is the one you want to submit your article for!</p>
 			document.cookie = 'mn-seen-temp-tour=1;max-age=172800;samesite=strict';
 		});
 
-		if (!mn_onboarding.showOnboarding && !document.cookie.includes('mn-seen-temp-tour')) {
+		if (mn_onboarding.temporaryTour.show && !document.cookie.includes('mn-seen-temp-tour')) {
 			tempTour.start();
 		}
 	}

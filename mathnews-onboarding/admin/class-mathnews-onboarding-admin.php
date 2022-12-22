@@ -115,6 +115,16 @@ class Mathnews_Onboarding_Admin {
 	 */
 	public function enqueue_onboarding_scripts() {
 		$nonce = wp_create_nonce('mn_onboarding');
+		$temp_tour = [
+			'show'       => get_option('mn_temp_modal_show', ['off', 'on'])[1] !== 'on' || !$this->show_onboarding(),
+			'title'      => get_option('mn_temp_modal_title', ''),
+			'text'       => get_option('mn_temp_modal_text', ''),
+			'buttonText' => get_option('mn_temp_modal_buttonText', 'Got it!'),
+			'attachTo'   => [
+				'element' => get_option('mn_temp_modal_attachTo', ''),
+				'on'      => 'auto',
+			],
+		];
 
 		wp_enqueue_script( 'shepherd', plugin_dir_url( __FILE__ ) . 'js/vendor/shepherd.min.js', [], '9.1.0', true );
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/mathnews-onboarding.js',
@@ -122,6 +132,7 @@ class Mathnews_Onboarding_Admin {
 		wp_localize_script($this->plugin_name, 'mn_onboarding', [
 			'showOnboarding'   => $this->show_onboarding(),
 			'nonce'            => $nonce,
+			'temporaryTour'    => get_option('mn_temp_modal_show', ['off', 'on'])[0] === 'on' ? $temp_tour : null,
 		]);
 	}
 
@@ -138,5 +149,35 @@ class Mathnews_Onboarding_Admin {
 		}
 
 		wp_send_json_error();
+	}
+
+	public function temp_modal_settings($settings) {
+		$s = $settings->add_section('temp-modal', __('Temporary modal', 'textdomain'));
+
+		$s->register('mn_temp_modal_show', __('Visibility', 'textdomain'), 'checkbox', ['off', 'on'], [
+				'labels' => ['Show temporary modal', 'Hide for new users'],
+				'attrs' => [
+					['id' => 'show-temp-modal'],
+					['data-disabled-by' => '#show-temp-modal::off'],
+				]
+			])
+			->register('mn_temp_modal_title', __('Title', 'textdomain'), 'text', 'Heads up!', [
+				'attrs' => ['data-disabled-by' => '#show-temp-modal::off'],
+			])
+			->register('mn_temp_modal_text', __('Content', 'textdomain'), 'editor', 'This is an example modal message. Replace me as you wish!', [
+				'editor' => ['textarea_rows' => 5, 'wpautop' => false],
+				'attrs' => ['data-disabled-by' => '#show-temp-modal::off'],
+			])
+			->register('mn_temp_modal_attachTo', __('Selector', 'textdomain'), 'text', '#wp-content-wrap', [
+				'description' => 'HTML selector of an element to highlight on-screen. Leave blank if you don\'t want to highlight anything.',
+				'attrs' => ['data-disabled-by' => '#show-temp-modal::off'],
+			])
+			->register('mn_temp_modal_buttonText', __('Button text', 'textdomain'), 'text', 'Got it!', [
+				'attrs' => ['data-disabled-by' => '#show-temp-modal::off'],
+			]);
+
+		$settings->writing->register('mn_helpful_links_show_onboarding', __('Additional helpful links', 'textdomain'), 'checkbox', ['on'], [
+			'labels' => ['Show link to repeat onboarding tour'],
+		]);
 	}
 }

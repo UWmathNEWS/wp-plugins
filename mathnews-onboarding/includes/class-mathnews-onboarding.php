@@ -153,6 +153,8 @@ class Mathnews_Onboarding {
 		$this->loader->add_action('load-post-new.php', $plugin_admin, 'init_onboarding_scripts');
 		$this->loader->add_action('wp_ajax_mn_register_onboarding', $plugin_admin, 'mark_onboarding_completed');
 
+		$this->loader->add_action('mathnews-core:add_settings', $plugin_admin, 'temp_modal_settings');
+
 	}
 
 	/**

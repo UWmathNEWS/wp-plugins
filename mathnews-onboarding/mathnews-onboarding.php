@@ -43,7 +43,7 @@ define( 'MATHNEWS_ONBOARDING_VERSION', VERSION );  // legacy API
 /**
  * Minimum version of mathNEWS Core required
  */
-const MIN_MATHNEWS_CORE = '1.2.0';
+const MIN_MATHNEWS_CORE = '1.3.0';
 
 /**
  * The code that runs during plugin activation.
