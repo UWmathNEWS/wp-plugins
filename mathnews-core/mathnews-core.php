@@ -16,7 +16,7 @@
  * Plugin Name:       mathNEWS Core
  * Plugin URI:        mathnews.uwaterloo.ca
  * Description:       Revamp article submission workflow
- * Version:           1.2.2
+ * Version:           1.3.0
  * Author:            mathNEWS Editors
  * Author URI:        All licensing queries should be directed to mathnews@gmail.com
  * License:           AGPL-3.0
