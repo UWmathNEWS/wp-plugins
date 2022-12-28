@@ -12,21 +12,32 @@ jQuery(($) => {
 
 	for (const [dep, dependents] of Object.entries(dependencies)) {
 		const $dep = $(dep);
+		const checkDisabled = (value) => value == 'on' || value == 'off' ?
+			(value == 'on') == $dep.prop('checked') :
+			(value[0] == '!' ? $dep.val() != value.slice(1) : $dep.val() == value);
 		const listener = () => {
 			for (const { dependent, value } of dependents) {
-				const disabled = value == 'on' || value == 'off' ?
-					(value == 'on') == $dep.prop('checked') :
-					(value[0] == '!' ? $dep.val() != value.slice(1) : $dep.val() == value);
-				dependent.prop('disabled', disabled);
+				const disabled = checkDisabled(value);
+				dependent.prop('readonly', disabled);
 
 				if (dependent.data('editor-id')) {
-					tinymce.get(dependent.data('editor-id')).setMode(disabled ? 'readonly' : 'design');
-					dependent.css('opacity', disabled ? 0.5 : 1);
+					tinymce.get(dependent.data('editor-id'))?.setMode(disabled ? 'readonly' : 'design');
+					dependent.find('.quicktags-toolbar input').prop('disabled', disabled);
+					dependent.find('textarea').prop('readonly', disabled);
 				}
 			}
 		};
 		$dep.on('change', listener);
 		listener();
+
+		// if the page is loaded with the quicktags editor, TinyMCE won't be initialized and disabling it will fail. So we
+		// have to hook into its initialization event to properly disable it.
+		// NOTE: sometimes TinyMCE won't have disabled styling despite being readonly. It's an upstream issue.
+		$(document).on('tinymce-editor-init', () => {
+			dependents.filter(({ dependent }) => dependent.data('editor-id')).forEach(({ dependent, value }) => {
+				tinymce.get(dependent.data('editor-id'))?.setMode(checkDisabled(value) ? 'readonly' : 'design');
+			});
+		});
 	}
 
 	// Show/hide passwords in password fields
@@ -53,5 +64,23 @@ jQuery(($) => {
 		$el.closest('form').on('submit', () => {
 			$field.attr('type', 'password');
 		});
-	})
+	});
+
+	// Enable tabs
+	$('.tab-container').on('click', (e) => {
+		if (e.target.tagName !== "BUTTON") return;
+		const $tab = $(e.target);
+		const $panel = $(document.getElementById($tab.attr('aria-controls')));
+
+		if ($tab.attr('aria-selected') === 'true') return;
+
+		$tab
+			.attr('aria-selected', 'true')
+			.siblings('[aria-controls]')
+			.attr('aria-selected', 'false');
+		$panel
+			.removeClass('hidden')
+			.siblings('[role="tabpanel"]')
+			.addClass('hidden');
+	});
 });

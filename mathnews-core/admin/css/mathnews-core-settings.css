@@ -1,0 +1,27 @@
+/* Give tabs styling */
+
+.tab-container {
+	display: flex;
+	border-bottom: 1px solid #c3c4c7;
+}
+
+.tab-container [role="tab"] {
+	background-color: #f0f0f1;
+	font-size: 14px;
+	font-weight: bold;
+	color: #50575e;
+	padding: 10px 20px 7px;
+	border: 0;
+	border-bottom: 3px solid #f0f0f1;
+	cursor: pointer;
+}
+
+.tab-container [role="tab"]:hover {
+	color: #333;
+	border-color: #d1d1d2;
+}
+
+.tab-container [role="tab"][aria-selected="true"] {
+	color: #000;
+	border-color: #2271b1;
+}
