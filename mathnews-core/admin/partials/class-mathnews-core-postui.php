@@ -15,112 +15,12 @@
 namespace Mathnews\WP\Core\Admin\Partials;
 
 use Mathnews\WP\Core\Consts;
+use Mathnews\WP\Core\Display;
+use Mathnews\WP\Core\Utils;
 
-class Display {
-	/**
-	 * Renders a screen to set the current issue
-	 *
-	 * @since 1.0.0
-	 */
-	static public function render_current_issue_settings_screen() {
-		$cur_issue = get_option(Consts\CURRENT_ISSUE_OPTION_NAME, Consts\CURRENT_ISSUE_OPTION_DEFAULT);  // [volume_num, issue_num]
+Utils::require_core('class-mathnews-core-display.php');
 
-		?>
-<div class="wrap">
-    <h1><?php _e('Set Current Issue', 'textdomain'); ?></h1>
-    <?php settings_errors(); ?>
-    <form action="options.php" method="post">
-        <?php
-        settings_fields(Consts\CURRENT_ISSUE_SETTINGS_SLUG);
-        do_settings_sections(Consts\CURRENT_ISSUE_SETTINGS_SLUG);
-        ?>
-        <button type="submit" name="submit" id="submit" class="button button-primary button-large">
-            Set current issue tag to
-            <code><span id="current-issue-tag"><?php echo esc_html("v{$cur_issue[0]}i{$cur_issue[1]}"); ?></span></code>
-        </button>
-    </form>
-</div>
-		<?php
-	}
-
-	/**
-	 * Renders description for setting the current issue
-	 *
-	 * @since 1.0.0
-	 */
-	static public function render_current_issue_settings_description() {
-		?>
-<p>
-    Enter the volume and issue number for the upcoming issue.
-    This will set the default tag to be applied when a writer submits an article.
-</p>
-		<?php
-	}
-
-	/**
-	 * Renders fields to set the current issue
-	 *
-	 * @since 1.0.0
-	 */
-	static public function render_current_issue_settings_fields($option_name, $default, $args) {
-		$cur_issue = get_option($option_name, $default);  // [volume_num, issue_num]
-		?>
-<label for="current-issue-tag-volume">Volume</label>
-<input type="text" id="current-issue-tag-volume" name="<?php echo esc_attr($option_name); ?>[0]" value="<?php echo esc_attr($cur_issue[0]); ?>" size="3" />
-<label for="current-issue-tag-issue">Issue</label>
-<input type="text" id="current-issue-tag-issue" name="<?php echo esc_attr($option_name); ?>[1]" value="<?php echo esc_attr($cur_issue[1]); ?>" size="1" />
-		<?php
-	}
-
-	/**
-	 * Generic helper for rendering notification dialogs
-	 *
-	 * @param $id ID to assign to the notification dialog
-	 * @param $title Title of the notification dialog
-	 * @param $callback Callback to render the notification dialog content
-     * @param $hidden Should dialog be hidden?
-	 * @param $args Additional arguments to pass to the callback function
-	 *
-	 * @since 1.0.0
-	 */
-	static public function notification_dialog($id, $title, $callback, $hidden = true, ...$args) {
-		$safe_id = esc_attr($id);
-		?>
-<div id="<?php echo $safe_id; ?>" class="notification-dialog-wrap <?php echo ($hidden ? 'hidden' : ''); ?>">
-    <div class="notification-dialog-background"></div>
-    <div class="notification-dialog">
-        <div id="<?php echo $safe_id; ?>--content" class="notification-dialog-content">
-            <?php
-            if ($title !== ''):
-            ?>
-                <h1 id="<?php echo $safe_id; ?>--title"><?php echo esc_html($title); ?></h1>
-            <?php
-            endif;
-            ?>
-            <?php call_user_func_array($callback, $args); ?>
-        </div>
-    </div>
-</div>
-		<?php
-	}
-
-	/**
-	 * Renders the editor lock warning modal.
-	 *
-	 * @since 1.0.0
-	 */
-	static public function render_editor_lock_dialog() {
-		?>
-<div id="mn-editor-lock-warning--message">
-    <p><?php _e('If you have any changes you would like to make, please contact the editors.', 'textdomain'); ?></p>
-</div>
-<p>
-    <a class="button button-primary" href="<?php echo admin_url('edit.php'); ?>"><?php _e('Go back', 'textdomain'); ?></a>
-    <button type="button" class="button dismiss-notification-dialog"><?php _e('View post', 'textdomain'); ?></button>
-</p>
-		<?php
-	}
-
+class PostUI {
 	/**
 	 * Render a textarea when rejecting an article
 	 *
@@ -193,66 +93,6 @@ class Display {
         <?php
     }
 
-    /**
-     * Renders a meta box containing all users who submitted posts to the current issue
-     * 
-     * @since 1.3.0
-     */
-    static public function render_current_issue_authors_meta_box() {
-        $cur_issue = get_option(Consts\CURRENT_ISSUE_OPTION_NAME, Consts\CURRENT_ISSUE_OPTION_DEFAULT);
-        $cur_tag = "v${cur_issue[0]}i${cur_issue[1]}";
-        $posts = get_posts([
-            'numberposts' => -1,
-            'post_status' => 'any',
-            'tag' => $cur_tag,
-        ]);
-        $authors = [];
-        
-        foreach ($posts as $post) {
-            $pseudonym = get_post_meta($post->ID, Consts\AUTHOR_META_KEY_NAME, true);
-            $authors[$pseudonym] = ($authors[$pseudonym] ?? 0) + 1;
-        }
-
-        $pseudonyms = array_keys($authors);
-        natcasesort($pseudonyms);
-
-        foreach ($pseudonyms as $pseudonym) {
-            ?>
-<p><label><input type="checkbox"> <?php echo esc_html($pseudonym); ?> (<?php echo $authors[$pseudonym]; ?>)</label></p>
-            <?php
-        }
-    }
-
-	/**
-	 * Renders a feedback admin notice
-	 *
-	 * @since 1.0.0
-	 */
-	static public function feedback_notice() {
-		?>
-<div class="notice notice-info">
-    <p>
-        We&#39;re testing out some changes to the article submission interface. Let us know what you think by emailing <a href="mailto:mathnews@gmail.com">mathnews@gmail.com</a>!
-    </p>
-</div>
-		<?php
-	}
-
-    /**
-     * Renders an admin notice
-     *
-     * @since 1.3.0
-     */
-    static public function admin_notice() {
-        $notice_type = get_option('mn_admin_notice_type', 'info');
-        $notice_text = get_option('mn_admin_notice_text', '');
-        ?>
-<div class="notice notice-<?php echo esc_attr($notice_type); ?>">
-    <?php echo $notice_text; ?>
-</div>
-        <?php
-    }
-
 	/**
 	 * Renders our custom publish meta box
 	 *
@@ -265,7 +105,7 @@ class Display {
 		$post_type        = $post->post_type;
 		$post_type_object = get_post_type_object( $post_type );
 		$can_publish      = current_user_can('edit_others_posts');
-        $user_is_author   = $post->post_author == get_current_user_id();  // double-equals as WP_Post::post_author is a numeric string
+		$user_is_author   = $post->post_author == get_current_user_id();  // double-equals as WP_Post::post_author is a numeric string
 
 		?>
 <div class="submitbox" id="submitpost">
@@ -456,7 +296,7 @@ class Display {
             $reject_rationale = $reject_rationale_matches[1];
             ?>
             <button type="button" class="button submitdelete" id="mn-show-reject-dialog"><?php _e( 'Reject', 'textdomain' ); ?></button>
-            <?php self::notification_dialog('mn-reject-dialog', __('Reject Article', 'textdomain'),
+            <?php Display::notification_dialog('mn-reject-dialog', __('Reject Article', 'textdomain'),
                 array(self::class, 'render_rejection_dialog'), true, $reject_rationale); ?>
             <?php
         } elseif ( current_user_can( 'delete_post', $post_id ) && $can_edit_post ) {
@@ -474,14 +314,13 @@ class Display {
 
     <div id="publishing-action">
         <?php
-        $cur_issue = get_option(Consts\CURRENT_ISSUE_OPTION_NAME, Consts\CURRENT_ISSUE_OPTION_DEFAULT);  // [volume_num, issue_num]
-        $cur_issue_tag = "v{$cur_issue[0]}i{$cur_issue[1]}";
+        $cur_issue_tag = Utils::get_current_tag();
         $post_tags = get_the_tags($post_id);
 
         if ($post_tags === false) {
-        	$post_tags = [];
+            $post_tags = [];
         } else {
-        	$cur_issue_tag = $post_tags[0]->name;  // just get the first tag in the list of tags
+            $cur_issue_tag = $post_tags[0]->name;  // just get the first tag in the list of tags
         }
 
         $cur_issue_tag = '<code>' . esc_html($cur_issue_tag) . '</code>';
@@ -511,7 +350,7 @@ class Display {
                     <span id="mn_publish-tag"><?php echo $cur_issue_tag; ?></span>
                 </button>
                 <div class="hidden">
-                    <span id="mn_publish-default-tag"><?php echo esc_html("v{$cur_issue[0]}i{$cur_issue[1]}"); ?></span>
+                    <span id="mn_publish-default-tag"><?php echo esc_html(Utils::get_current_tag()); ?></span>
                 </div>
                 <?php
             // else :
@@ -525,7 +364,7 @@ class Display {
                     <span id="mn_publish-tag"><?php echo $cur_issue_tag; ?></span>
                 </button>
                 <div class="hidden">
-                    <span id="mn_publish-default-tag"><?php echo esc_html("v{$cur_issue[0]}i{$cur_issue[1]}"); ?></span>
+                    <span id="mn_publish-default-tag"><?php echo esc_html(Utils::get_current_tag()); ?></span>
                 </div>
                 <?php
             endif;

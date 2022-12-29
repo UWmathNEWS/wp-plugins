@@ -51,7 +51,7 @@ class Utils {
 	 * @since 1.3.0
 	 * @param array $arr An array of attribute keys to values
 	 */
-	static public function build_attrs_from_array($arr) {
+	static public function build_attrs_from_array(array $arr) {
 		if (empty($arr)) { return ''; }
 
 		$str = '';
@@ -61,5 +61,18 @@ class Utils {
 			}
 		}
 		return $str;
+	}
+
+	/**
+	 * Get current issue tag
+	 *
+	 * @since 1.4.0
+	 * @param array $cur_issue An array of the form [volume_num, issue_num]
+	 */
+	static public function get_current_tag(array $cur_issue = null) {
+		if (is_null($cur_issue)) {
+			$cur_issue = get_option(Consts\CURRENT_ISSUE_OPTION_NAME, Consts\CURRENT_ISSUE_OPTION_DEFAULT);
+		}
+		return "v${cur_issue[0]}i${cur_issue[1]}";
 	}
 }

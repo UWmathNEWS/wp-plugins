@@ -3,7 +3,7 @@ Contributors: All licensing queries should be directed to mathnews@gmail.com
 Requires at least: 5.9.0
 Tested up to: 6.1.2
 Stable tag: 6.1.2
-Requires PHP: 7.2
+Requires PHP: 7.3
 License: AGPLv3
 License URI: https://www.gnu.org/licenses/agpl-3.0.en.html
 

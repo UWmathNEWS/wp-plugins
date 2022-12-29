@@ -141,77 +141,37 @@ class Mathnews_Core {
 	 */
 	private function define_admin_hooks() {
 		if (is_admin()) {
-			Utils::require(dirname( __FILE__ ), 'admin/class-mathnews-core-admin.php');
+			Utils::require(dirname( __FILE__ ), 'admin/mathnews-core-admin.php');
 
-			$plugin_admin = new Admin\Mathnews_Core_Admin( $this->get_plugin_name(), $this->get_version() );
+			// core bootstrap functionality
+			new Admin\Admin();
 
-			// basic loading of scripts and styles
-			$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
-			$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
+			// article approval flow
+			new Admin\ArticleApproval();
 
-			// create categories needed
-			$this->loader->add_action('admin_init', $plugin_admin, 'create_categories');
-
-			// set phpmailer config
-			$this->loader->add_action('phpmailer_init', $plugin_admin, 'phpmailer_init');
-			$this->loader->add_action('wp_mail_failed', $plugin_admin, 'phpmailer_error_handler');
+			// article submission flow (including locking, restrictions)
+			new Admin\ArticleSubmission();
 
 			// register settings screen
-			$this->loader->add_action('admin_menu', $plugin_admin, 'add_settings_screen');
-			$this->loader->add_action('admin_init', $plugin_admin, 'register_settings');
-			$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_settings_scripts');
+			new Admin\CoreSettings();
 
 			// register screen to set the current issue
-			$this->loader->add_action('admin_menu', $plugin_admin, 'add_current_issue_settings_screen');
-			$this->loader->add_action('admin_init', $plugin_admin, 'register_current_issue_settings');
-			$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_current_issue_settings_scripts');
-			$this->loader->add_action('update_option_' . Consts\CURRENT_ISSUE_OPTION_NAME, $plugin_admin, 'move_current_issue_pending_to_draft');
+			new Admin\CurrentIssueSettings();
 
-			// remove quick draft widget from dashboard
-			$this->loader->add_action('admin_init', $plugin_admin, 'remove_quick_draft_widget');
+			// email settings
+			new Admin\Email();
 
-			// register meta boxes and additional fields
-			$this->loader->add_action('load-post.php', $plugin_admin, 'meta_box_setup');
-			$this->loader->add_action('load-post-new.php', $plugin_admin, 'meta_box_setup');
+			// admin notices
+			new Admin\Notices();
 
-			// register additional input fields' corresponding action handlers
-			$this->loader->add_action('save_post_post', $plugin_admin, 'save_subtitle_post_meta', 10, 2);
-			$this->loader->add_action('save_post_post', $plugin_admin, 'save_author_post_meta', 10, 2);
-			$this->loader->add_action('save_post_post', $plugin_admin, 'save_postscript_post_meta', 10, 2);
+			// post screen UI
+			new Admin\PostUI();
 
-			// add the current issue tag and normalize categories on submit
-			$this->loader->add_action('pending_post', $plugin_admin, 'add_current_issue_tag', 10, 2);
-			$this->loader->add_action('pending_post', $plugin_admin, 'normalize_categories_on_submit', 10, 2);
+			// general admin UI
+			new Admin\UI();
 
-			// add link to pending articles to sidebar
-			$this->loader->add_action('admin_menu', $plugin_admin, 'link_to_pending');
-
-			// colour categories for easy recognition
-			$this->loader->add_filter('post_column_taxonomy_links', $plugin_admin, 'colourize_categories', 10, 3);
-
-			// handlers for post approval and rejection
-			$this->loader->add_action('save_post_post', $plugin_admin, 'handle_post_approval', 10, 2);
-			$this->loader->add_filter('wp_insert_post_data', $plugin_admin, 'prepend_rejection_rationale');
-			$this->loader->add_filter('wp_insert_post_data', $plugin_admin, 'normalize_post_status_on_approval');
-
-			// lock editor after submission
-			$this->loader->add_action('admin_footer-post.php', $plugin_admin, 'show_editor_lock_warning');
-			$this->loader->add_filter('tiny_mce_before_init', $plugin_admin, 'lock_tinymce');
-			$this->loader->add_filter('teeny_mce_before_init', $plugin_admin, 'lock_tinymce');
-
-			// restrict contributors from quick-editing posts
-			$this->loader->add_filter('quick_edit_show_taxonomy', $plugin_admin, 'remove_categories_from_quickedit', 10, 3);
-			$this->loader->add_filter('post_row_actions', $plugin_admin, 'modify_post_row_actions', 10, 2);
-
-			// Show pseudonym instead of display name
-			$this->loader->add_filter('the_author', $plugin_admin, 'show_pseudonym_as_author');
-
-			// AB tests
-			$this->loader->add_filter('the_author', $plugin_admin, 'filter_author_AB');
-			$this->loader->add_action('admin_notices', $plugin_admin, 'feedback_notice');
-
-			// Show admin notice to all users
-			$this->loader->add_action('admin_notices', $plugin_admin, 'admin_notice');
+			// beta and A/B tests
+			new Admin\UserTesting();
 		}
 	}
 
