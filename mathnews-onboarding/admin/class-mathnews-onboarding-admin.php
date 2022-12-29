@@ -115,16 +115,18 @@ class Mathnews_Onboarding_Admin {
 	 */
 	public function enqueue_onboarding_scripts() {
 		$nonce = wp_create_nonce('mn_onboarding');
-		$temp_tour = [
-			'show'       => get_option('mn_temp_modal_show', ['off', 'on'])[1] !== 'on' || !$this->show_onboarding(),
-			'title'      => get_option('mn_temp_modal_title', ''),
-			'text'       => get_option('mn_temp_modal_text', ''),
-			'buttonText' => get_option('mn_temp_modal_buttonText', 'Got it!'),
-			'attachTo'   => [
-				'element' => get_option('mn_temp_modal_attachTo', ''),
-				'on'      => 'auto',
-			],
-		];
+		$temp_tour = time() < strtotime(get_option('mn_temp_modal_autohide', ''))
+			? [
+					'show'       => get_option('mn_temp_modal_show', ['off', 'on'])[1] !== 'on' || !$this->show_onboarding(),
+					'title'      => get_option('mn_temp_modal_title', ''),
+					'text'       => get_option('mn_temp_modal_text', ''),
+					'buttonText' => get_option('mn_temp_modal_buttonText', 'Got it!'),
+					'attachTo'   => [
+						'element' => get_option('mn_temp_modal_attachTo', ''),
+						'on'      => 'auto',
+					],
+				]
+			: null;
 
 		wp_enqueue_script( 'shepherd', plugin_dir_url( __FILE__ ) . 'js/vendor/shepherd.min.js', [], '9.1.0', true );
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/mathnews-onboarding.js',
@@ -152,7 +154,10 @@ class Mathnews_Onboarding_Admin {
 	}
 
 	public function temp_modal_settings($settings) {
-		$s = $settings->add_section('temp-modal', __('Temporary modal', 'textdomain'));
+		$s = $settings->add_section('temp-modal', __('Temporary modal', 'textdomain'), [
+			'tab' => 'writing',
+			'callback' => function() { echo 'Use this to highlight new changes and updates to the writing screen.'; },
+		]);
 
 		$s->register('mn_temp_modal_show', __('Visibility', 'textdomain'), 'checkbox', ['off', 'on'], [
 				'labels' => ['Show temporary modal', 'Hide for new users'],
@@ -174,9 +179,13 @@ class Mathnews_Onboarding_Admin {
 			])
 			->register('mn_temp_modal_buttonText', __('Button text', 'textdomain'), 'text', 'Got it!', [
 				'attrs' => ['data-disabled-by' => '#show-temp-modal::off'],
+			])
+			->register('mn_temp_modal_autohide', __('Hide after', 'textdomain'), 'text', date('Y-m-d', time()), [
+				'type' => 'date',
+				'attrs' => ['data-disabled-by' => '#show-temp-modal::off'],
 			]);
 
-		$settings->writing->register('mn_helpful_links_show_onboarding', __('Additional helpful links', 'textdomain'), 'checkbox', ['on'], [
+		$settings->get('writing')->register('mn_helpful_links_show_onboarding', __('Additional helpful links', 'textdomain'), 'checkbox', ['on'], [
 			'labels' => ['Show link to repeat onboarding tour'],
 		]);
 	}
