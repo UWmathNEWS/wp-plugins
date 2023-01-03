@@ -11,7 +11,6 @@
 
 namespace Mathnews\WP\Onboarding\Admin;
 
-use Mathnews\WP\Core\Consts;
 use Mathnews\WP\Core\Utils;
 
 /**
@@ -52,6 +51,13 @@ class Mathnews_Onboarding_Admin {
 	 * @var      string    $version    The current major version of this plugin.
 	 */
 	private $major_version;
+
+	/**
+	 * Onboarding option key name
+	 *
+	 * @since 1.1.1
+	 */
+	const ONBOARDING_OPTION_KEY_NAME = 'mn_onboarded_successfully';
 
 	/**
 	 * Initialize the class and set its properties.
@@ -95,7 +101,7 @@ class Mathnews_Onboarding_Admin {
 	private function show_onboarding() {
 		global $post;
 
-		return Utils::can_edit($post) && get_user_option(Consts\ONBOARDING_OPTION_KEY_NAME) !== $this->current_onboarding_value();
+		return Utils::can_edit($post) && get_user_option(self::ONBOARDING_OPTION_KEY_NAME) !== $this->current_onboarding_value();
 	}
 
 	/**
@@ -146,7 +152,7 @@ class Mathnews_Onboarding_Admin {
 	public function mark_onboarding_completed() {
 		check_ajax_referer('mn_onboarding');
 
-		if (update_user_option(get_current_user_id(), Consts\ONBOARDING_OPTION_KEY_NAME, $this->current_onboarding_value())) {
+		if (update_user_option(get_current_user_id(), self::ONBOARDING_OPTION_KEY_NAME, $this->current_onboarding_value())) {
 			wp_send_json_success();
 		}
 

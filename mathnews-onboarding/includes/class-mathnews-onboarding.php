@@ -69,11 +69,7 @@ class Mathnews_Onboarding {
 	 * @since    1.0.0
 	 */
 	public function __construct() {
-		if ( defined( 'MATHNEWS_ONBOARDING_VERSION' ) ) {
-			$this->version = MATHNEWS_ONBOARDING_VERSION;
-		} else {
-			$this->version = '1.0.0';
-		}
+		$this->version = VERSION;
 		$this->plugin_name = 'mathnews-onboarding';
 
 		$this->load_dependencies();

@@ -79,7 +79,7 @@ function run_mathnews_onboarding() {
 	/**
 	 * Ensure minimum mathNEWS Core version before running
 	 */
-	$core_version_info = explode('.', \Mathnews\WP\Core\VERSION);
+	$core_version_info = explode('.', strtok(\Mathnews\WP\Core\VERSION, '-'));
 	$min_core_version_info = explode('.', MIN_MATHNEWS_CORE);
 
 	if (
