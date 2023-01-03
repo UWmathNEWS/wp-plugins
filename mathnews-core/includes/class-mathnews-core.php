@@ -69,12 +69,8 @@ class Mathnews_Core {
 	 * @since    1.0.0
 	 */
 	public function __construct() {
-		if ( defined( 'MATHNEWS_CORE_VERSION' ) ) {
-			$this->version = MATHNEWS_CORE_VERSION;
-		} else {
-			$this->version = '1.0.0';
-		}
-		$this->plugin_name = 'mathnews-core';
+		$this->version = VERSION;
+		$this->plugin_name = PLUGIN_NAME;
 
 		$this->load_dependencies();
 		$this->set_locale();
@@ -151,6 +147,10 @@ class Mathnews_Core {
 
 			// article submission flow (including locking, restrictions)
 			new Admin\ArticleSubmission();
+
+			// auditing hooks and settings
+			new Admin\AuditInit();
+			new Admin\AuditUI();
 
 			// register settings screen
 			new Admin\CoreSettings();

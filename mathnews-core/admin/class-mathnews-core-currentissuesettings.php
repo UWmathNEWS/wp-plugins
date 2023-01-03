@@ -16,6 +16,7 @@ use Mathnews\WP\Core\Consts;
 use Mathnews\WP\Core\Utils;
 
 Utils::require_core('class-mathnews-core-settings.php');
+Utils::require_core('trait-mathnews-core-audit.php');
 
 /**
  * Functionality for the current issue settings page.
@@ -25,6 +26,8 @@ Utils::require_core('class-mathnews-core-settings.php');
  * @author     mathNEWS Editors <mathnews@gmail.com>
  */
 class CurrentIssueSettings {
+	use Core\Audit;
+
 	/**
 	 * General settings class
 	 *
@@ -39,7 +42,7 @@ class CurrentIssueSettings {
 		add_action('admin_init', array($this, 'register_current_issue_settings'));
 		add_action('mn_settings_enqueue_scripts_' . Consts\CURRENT_ISSUE_SETTINGS_SLUG, array($this, 'enqueue_current_issue_settings_scripts'));
 		add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
-		add_action('update_option_' . Consts\CURRENT_ISSUE_OPTION_NAME, $plugin_admin, 'move_current_issue_pending_to_draft');
+		add_action('update_option_' . Consts\CURRENT_ISSUE_OPTION_NAME, array($this, 'move_current_issue_pending_to_draft'), 10, 2);
 	}
 
 	/**
@@ -112,17 +115,19 @@ class CurrentIssueSettings {
 	 * Change status of pending posts for the given tag to draft
 	 *
 	 * @since 1.3.0
+	 * @since 1.4.0 Add auditing functionality, change to use 2 params
 	 * @uses update_option_${Consts\CURRENT_ISSUE_OPTION_NAME}
 	 */
-	public function move_current_issue_pending_to_draft(array $cur_issue) {
+	public function move_current_issue_pending_to_draft(array $old_issue, array $new_issue) {
 		global $wpdb;
 
-		if ($_POST[Consts\CURRENT_ISSUE_OPTION_NAME . '_change']) {
-			$cur_tag = Utils::get_current_tag($cur_issue);
+		$old_tag = Utils::get_current_tag($old_issue);
+		$new_tag = Utils::get_current_tag($new_issue);
 
+		if ($_POST[Consts\CURRENT_ISSUE_OPTION_NAME . '_change']) {
 			// Unfortunately, this fires before the Wordpress posts query is initialized, so we cannot use get_posts, nor can
 			// we use WP_Query. Hence, we are forced to make a direct DB query to update the post status.
-			$wpdb->query(
+			$success = $wpdb->query(
 				$wpdb->prepare(
 					"UPDATE {$wpdb->posts} AS p
 						INNER JOIN {$wpdb->term_relationships} AS r ON (r.object_id = p.ID)
@@ -130,10 +135,24 @@ class CurrentIssueSettings {
 						INNER JOIN {$wpdb->terms} AS t ON (t.term_id = tx.term_id)
 					SET p.post_status = %s
 					WHERE p.post_status = %s AND p.post_type = %s AND t.name = %s",
-					['draft', 'pending', 'post', $cur_tag]
+					['draft', 'pending', 'post', $old_tag]
 				)
 			);
+
+			if ($success) {  // no need for ===/!== as suggested in docs since we don't care to audit if no posts were affected
+				$this->audit_without_target('cur_issue.update', get_current_user_id(), [
+					'new_tag' => $new_tag,
+					'old_tag' => $old_tag,
+					'num_posts' => $success,
+				]);
+				return;
+			}
 		}
+
+		$this->audit_without_target('cur_issue.update', get_current_user_id(), [
+			'new_tag' => $new_tag,
+			'old_tag' => $old_tag,
+		]);
 	}
 
 	/**

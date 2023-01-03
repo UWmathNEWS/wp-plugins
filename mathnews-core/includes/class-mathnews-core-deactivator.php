@@ -23,14 +23,14 @@ namespace Mathnews\WP\Core;
 class Deactivator {
 
 	/**
-	 * Short Description. (use period)
-	 *
-	 * Long Description.
+	 * Deactivate the plugin.
+   *
+   * Clears scheduled actions.
 	 *
 	 * @since    1.0.0
 	 */
 	public static function deactivate() {
-
+    wp_clear_scheduled_hook('mn_audit_clear_entries');
 	}
 
 }

@@ -132,6 +132,10 @@ class SettingsField {
 			$attrs['autocomplete'] = 'off';
 		}
 
+		if (!empty($this->args['before_text'])) {
+			echo wp_kses_post($this->args['before_text']);
+		}
+
 		echo sprintf('<input %s />', Utils::build_attrs_from_array($attrs));
 
 		// show password hide/show
@@ -145,6 +149,10 @@ class SettingsField {
 			echo sprintf('<button %s>', Utils::build_attrs_from_array($btn_attrs));
 			echo '<span class="dashicons dashicons-visibility" aria-hidden="true"></span> <span class="text">Show</span>';
 			echo '</button>';
+		}
+
+		if (!empty($this->args['after_text'])) {
+			echo wp_kses_post($this->args['after_text']);
 		}
 
 		if (!empty($this->args['description'])) {
@@ -263,12 +271,21 @@ class SettingsField {
 		];
 		$attrs = array_merge($default_attrs, $this->args['attrs'] ?? [], $mandatory_attrs);
 
+		if (!empty($this->args['before_text'])) {
+			echo wp_kses_post($this->args['before_text']);
+		}
+
 		echo sprintf('<select %s>', Utils::build_attrs_from_array($attrs));
 		foreach ($this->args['labels'] as $value => $label) {
 			echo sprintf('<option value="%1$s"%3$s>%2$s</option>',
 				esc_attr($value), $label, selected($value, get_option($this->id, $this->default), false));
 		}
 		echo '</select>';
+
+		if (!empty($this->args['after_text'])) {
+			echo wp_kses_post($this->args['after_text']);
+		}
+
 		if (!empty($this->args['description'])) {
 			echo '<p class="description">' . wp_kses_post($this->args['description']) . '</p>';
 		}
@@ -309,10 +326,12 @@ class SettingsSection {
 	 * @param array $args {
 	 * 	Optional. Additional arguments to pass to $callback. For predefined fields, the following keys are recognized:
 	 *
+	 * 	@type string $after_text Content to output after the field. Only valid when $callback is `text` or `select`.
 	 * 	@type array $attrs HTML attributes to assign to the field. `type`, `name`, `value`, and `checked` are ignored. If
 	 * 	                   $callback is `checkbox` or `radio`, then this can be an array of arrays, where each entry in
 	 * 	                   the top-level array corresponds to the specified item; specifically, for `radio` each
 	 * 	                   top-level key must also be a key in $labels. Otherwise, $attrs is shared across all items.
+	 * 	@type string $before_text Content to output before the field. Only valid when $callback is `text` or `select`.
 	 * 	@type string $description HTML Description for the field.
 	 * 	@type callable|bool $dummy Flag this as a dummy option (i.e. there is no corresponding DB entry). If a callable
 	 * 	                           is supplied, it is passed to the `pre_update_option_{$option}` hook; the return value
@@ -450,13 +469,6 @@ class Settings {
 		$this->sections[] = new SettingsSection($id, $title, $callback, $args);
 		$this->sections_indices[$id] = count($this->sections) - 1;
 
-		if (isset($args['tab']) && !is_null($this->tabs) && isset($this->tabs[$args['tab']])) {
-			$this->tabs[$args['tab']]['sections'][] = $this->sections_indices[$id];
-		} else if (!is_null($this->tabs)) {
-			$this->add_tab($id, $title);
-			$this->tabs[$id]['sections'][] = $this->sections_indices[$id];
-		}
-
 		return $this->get($id);
 	}
 
@@ -466,7 +478,7 @@ class Settings {
 	 * @since 1.3.0
 	 */
 	public function run() {
-		foreach ($this->sections as $section) {
+		foreach ($this->sections as $ind => $section) {
 			add_settings_section($section->id, $section->title, $section->callback, $this->slug, $section->args);
 
 			foreach ($section->settings as $setting) {
@@ -484,8 +496,15 @@ class Settings {
 					add_filter("pre_update_option_{$setting->id}", function($value, $old_value, $option) use ($setting) {
 						$setting->_do_dummy($value, $old_value, $option);
 						return $old_value;  // prevent an update, and hence prevent the option from even existing and clogging up the DB
-					}, 10, 2);
+					}, 10, 3);
 				}
+			}
+
+			if (isset($section->args['tab']) && !is_null($this->tabs) && isset($this->tabs[$section->args['tab']])) {
+				$this->tabs[$section->args['tab']]['sections'][] = $ind;
+			} else if (!is_null($this->tabs)) {
+				$this->add_tab($section->id, $title);
+				$this->tabs[$section->id]['sections'][] = $ind;
 			}
 		}
 	}

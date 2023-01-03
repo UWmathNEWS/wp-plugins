@@ -1,6 +1,7 @@
 == 1.4.0 ==
 
 - Major internal refactoring for easier maintenance
+- Added audit log
 - Added tabs to Settings class for better organization of settings
 - Changed A/B testing to be a WordPress option instead of being hardcoded
 - Updated minimum PHP version requirement to 7.3

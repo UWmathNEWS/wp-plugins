@@ -36,7 +36,7 @@ class UserTesting {
 	 *
 	 * @since 1.0.0
 	 */
-	public function filter_author_AB(string $display_name): string {
+	public function filter_author_AB(?string $display_name): ?string {
 		global $authordata;
 		if (self::ab_tests_enabled() && current_user_can('manage_options') && !is_null($display_name) && self::is_B_user($authordata->ID)) {
 			return $display_name . ' <em>(*)</em>';

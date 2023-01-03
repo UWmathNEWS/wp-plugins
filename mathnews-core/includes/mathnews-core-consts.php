@@ -107,5 +107,6 @@ const HELPFUL_LINKS_OPTION_NAME = 'mn_helpful_links';
  * Onboarding option key name
  *
  * @since 1.0.0
+ * @deprecated
  */
 const ONBOARDING_OPTION_KEY_NAME = 'mn_onboarded_successfully';

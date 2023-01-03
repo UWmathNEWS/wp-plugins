@@ -1,0 +1,158 @@
+#mn-audit-log-mount {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: 2em;
+}
+
+.mn-audit-log-filters {
+	align-self: flex-start;
+	display: flex;
+	flex-direction: column;
+	min-width: 250px;
+	max-width: 25rem;
+	flex: 1;
+}
+
+@media screen and (min-width: 783px) {
+	.mn-audit-log-filters {
+		position: sticky;
+		top: 32px;  /* height of admin bar */
+	}
+}
+
+.mn-audit-log-filters select {
+	margin-bottom: 0.5em;
+}
+
+.mn-audit-log-list {
+	position: relative;
+	min-width: 300px;
+	flex: 4;
+}
+
+/*
+ *Audit log entries
+ */
+
+.mn-audit-log-entry {
+	--verb-clr: #777;
+	background-color: white;
+	border: 1px solid #ccc;
+	border-radius: 0.5em;
+	margin: 0.5em 0;
+}
+
+[data-action~="approve"],
+[data-action~="create"] {
+	--verb-clr: #06a622;
+}
+
+[data-action~="reject"],
+[data-action~="delete"] {
+	--verb-clr: #cc0000;
+}
+
+[data-action~="update"] {
+	--verb-clr: #dbb902;
+}
+
+.mn-audit-log-entry summary {
+	list-style-type: none;
+}
+
+.mn-audit-log-entry details[open] summary {
+	border-bottom: 1px solid #ccc;
+}
+
+.mn-audit-log-entry .log-entry-summary {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	padding: 0.5em 1em;
+}
+
+.mn-audit-log-entry .log-entry-icon {
+	position: relative;
+	margin-right: 0.5em;
+}
+
+.mn-audit-log-entry .log-entry-icon .verb {
+	position: absolute;
+	bottom: -40%;
+	right: -30%;
+	background-color: white;
+	color: var(--verb-clr, black);
+	transform: scale(0.7);
+	border-radius: 100%;
+}
+
+.mn-audit-log-entry .log-entry-heading {
+	min-width: 0;
+}
+
+.mn-audit-log-entry .log-entry-heading p {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	margin: 0;
+}
+
+.mn-audit-log-entry .log-entry-heading a {
+	color: inherit;
+	font-weight: bold;
+	text-decoration: underline;
+}
+
+.mn-audit-log-entry .log-entry-heading a:hover {
+	text-decoration: underline;
+}
+
+.mn-audit-log-entry details[open] .log-entry-heading p {
+	white-space: normal;
+}
+
+.mn-audit-log-entry details .log-entry-toggle {
+	margin-left: auto;
+}
+
+.mn-audit-log-entry details[open] .log-entry-toggle {
+	transform: rotate(90deg);
+}
+
+.mn-audit-log-entry .small {
+	font-size: 0.9em;
+	color: #555;
+}
+
+.mn-audit-log-entry .log-entry-details {
+	background-color: #efefef;
+	padding: 0.5em 1em;
+	border-radius: 0 0 0.5em 0.5em;
+}
+
+.mn-audit-log-entry ol {
+	margin: 0 0 0 1em;
+}
+
+.mn-audit-log-empty {
+	text-align: center;
+	font-style: italic;
+	padding: 0.5em 1em;
+}
+
+.mn-audit-log-loading {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	background-color: rgba(255, 255, 255, 0.8);
+	text-align: center;
+	font-style: italic;
+	padding-top: 5em;
+	z-index: 9999;
+}
