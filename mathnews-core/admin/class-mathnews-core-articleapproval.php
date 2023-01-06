@@ -15,8 +15,6 @@ use Mathnews\WP\Core;
 use Mathnews\WP\Core\Consts;
 use Mathnews\WP\Core\Utils;
 
-Utils::require_core('trait-mathnews-core-audit.php');
-
 /**
  * Article submission flow.
  *
@@ -25,8 +23,6 @@ Utils::require_core('trait-mathnews-core-audit.php');
  * @author     mathNEWS Editors <mathnews@gmail.com>
  */
 class ArticleApproval {
-	use Core\Audit;
-
 	public function __construct() {
 		add_action('save_post_post', array($this, 'handle_post_approval'), 10, 2);
 		add_filter('wp_insert_post_data', array($this, 'prepend_rejection_rationale'));
@@ -57,12 +53,6 @@ class ArticleApproval {
 
 		// let rejection take precedence over approval
 		if ($is_rejected) {
-			$this->audit('post.reject', get_current_user_id(), $post_id, [
-				'returned' => isset($_POST['mn-reject-draft']),
-				'notified' => isset($_POST['mn-reject-email']),
-				'rationale' => wp_strip_all_tags(strtok($reject_rationale, ".\r\n")),
-			]);
-
 			$rejected_cat = get_cat_ID(Consts\REJECTED_CAT_NAME);
 
 			wp_set_post_categories($post_id, $rejected_cat);
@@ -76,8 +66,6 @@ class ArticleApproval {
 				$this->notify_author_on_reject($post, wp_strip_all_tags($reject_rationale), $_POST['mn-reject-draft'] ?? 0);
 			}
 		} elseif ($is_approved) {
-			$this->audit('post.approve', get_current_user_id(), $post_id, []);
-
 			$approved_cat = get_cat_ID(Consts\APPROVED_CAT_NAME);
 
 			wp_set_post_categories($post_id, $approved_cat);

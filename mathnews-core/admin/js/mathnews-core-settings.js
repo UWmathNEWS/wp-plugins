@@ -74,6 +74,10 @@ jQuery(($) => {
 
 		if ($tab.attr('aria-selected') === 'true') return;
 
+		const url = new URL(window.location);
+		url.searchParams.set('tab', $tab.attr('id'));
+		window.history.replaceState({}, '', url);
+
 		$tab
 			.attr('aria-selected', 'true')
 			.siblings('[aria-controls]')

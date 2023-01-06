@@ -86,8 +86,9 @@ const CURRENT_ISSUE_OPTION_NAME = 'mn_current_issue';
  * Current issue option default
  *
  * @since 1.0.0
+ * @since 1.4.0 Change to a tag that will never happen in real life
  */
-const CURRENT_ISSUE_OPTION_DEFAULT = ['123', '4'];  // [volume_num, issue_num]
+const CURRENT_ISSUE_OPTION_DEFAULT = ['1XX', 'Y'];  // [volume_num, issue_num]
 
 /**
  * Plugin settings page slug

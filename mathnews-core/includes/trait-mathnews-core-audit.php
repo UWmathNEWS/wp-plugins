@@ -11,8 +11,6 @@
 
 namespace Mathnews\WP\Core;
 
-use Mathnews\WP\Core\Consts;
-
 /**
  * A mixin that extending classes can use to add entries to the audit log.
  *
@@ -27,7 +25,10 @@ trait Audit {
 	 * @since 1.4.0
 	 * @access private
 	 */
-	private $audit_table = 'mn_audit_log';
+	private function audit_table() {
+		global $wpdb;
+		return $wpdb->prefix . 'mn_audit_log';
+	}
 
 	/**
 	 * Add an entry to the audit log.
@@ -46,7 +47,7 @@ trait Audit {
 		global $wpdb;
 
 		$result = $wpdb->query($wpdb->prepare(
-			"INSERT INTO $this->audit_table (log_time, log_action, log_actor_id, log_target_id, log_message)
+			"INSERT INTO {$this->audit_table()} (log_time, log_action, log_actor_id, log_target_id, log_message)
 			VALUES (UTC_TIMESTAMP(), %s, %d, %d, %s)",
 			[$action, $actor_id, $target_id, json_encode((object)$message, JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK)]
 		));
@@ -69,7 +70,7 @@ trait Audit {
 		global $wpdb;
 
 		return $wpdb->query($wpdb->prepare(
-			"INSERT INTO $this->audit_table (log_time, log_action, log_actor_id, log_message)
+			"INSERT INTO {$this->audit_table()} (log_time, log_action, log_actor_id, log_message)
 			VALUES (UTC_TIMESTAMP(), %s, %d, %s)",
 			[$action, $actor_id, json_encode((object)$message, JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK)]
 		));

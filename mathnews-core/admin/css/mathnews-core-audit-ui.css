@@ -132,7 +132,12 @@
 }
 
 .mn-audit-log-entry ol {
+	line-height: 1.6;
 	margin: 0 0 0 1em;
+}
+
+.mn-audit-log-entry code {
+	font-size: 0.9em;
 }
 
 .mn-audit-log-empty {

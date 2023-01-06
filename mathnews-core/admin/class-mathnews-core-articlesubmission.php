@@ -157,7 +157,9 @@ class ArticleSubmission {
 	 * @uses pending_post
 	 */
 	public function normalize_categories_on_submit($post_id, $post) {
-		wp_set_post_categories($post_id, []);
+		if (get_current_user_id() == $post->post_author) {
+			wp_set_post_categories($post_id, []);
+		}
 	}
 
 	/**

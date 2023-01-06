@@ -1,6 +1,6 @@
 === mathNEWS Core ===
 Contributors: All licensing queries should be directed to mathnews@gmail.com
-Requires at least: 5.9.0
+Requires at least: 6.0.0
 Tested up to: 6.1.2
 Stable tag: 6.1.2
 Requires PHP: 7.3

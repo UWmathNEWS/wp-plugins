@@ -535,6 +535,7 @@ class Settings {
 	 * @since 1.4.0
 	 */
 	public function render_with_tabs() {
+		$selected_tab = in_array($_GET['tab'], array_keys($this->tabs)) ? $_GET['tab'] : array_key_first($this->tabs);
 		?>
 <div class="wrap">
 	<h1><?php echo $this->title; ?></h1>
@@ -544,7 +545,7 @@ class Settings {
 			echo sprintf('<button id="%1$s" role="tab" aria-selected="%3$s" aria-controls="panel-%1$s">%2$s</button>',
 				esc_attr($id),
 				esc_html($tab['title']),
-				array_key_first($this->tabs) === $id ? 'true' : 'false');
+				$selected_tab === $id ? 'true' : 'false');
 		}
 		?>
 	</div>
@@ -555,9 +556,9 @@ class Settings {
 		foreach ($this->tabs as $id => $tab) {
 			echo sprintf('<section id="panel-%s" class="%s" role="tabpanel" aria-labelledby="%1$s">',
 				esc_attr($id),
-				array_key_first($this->tabs) === $id ? '' : 'hidden');
+				$selected_tab === $id ? '' : 'hidden');
 
-			foreach($tab['sections'] as $ind) {
+			foreach ($tab['sections'] as $ind) {
 				$section = $this->sections[$ind];
 
 				if (isset($section->args['before_section'])) {

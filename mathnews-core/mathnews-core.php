@@ -16,7 +16,7 @@
  * Plugin Name:       mathNEWS Core
  * Plugin URI:        mathnews.uwaterloo.ca
  * Description:       Revamp article submission workflow
- * Version:           1.4.0-alpha3
+ * Version:           1.4.0-alpha10
  * Author:            mathNEWS Editors
  * Author URI:        All licensing queries should be directed to mathnews@gmail.com
  * License:           AGPL-3.0
@@ -38,7 +38,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Rename this for your plugin and update it as you release new versions.
  */
 const PLUGIN_NAME = 'mathnews-core';
-const VERSION = '1.4.0-alpha3';
+const VERSION = '1.4.0-alpha10';
 const DB_VERSION = 1;
 
 define('MATHNEWS_CORE_VERSION', VERSION);  // legacy, deprecated
@@ -65,18 +65,8 @@ function deactivate_mathnews_core() {
 	Deactivator::deactivate();
 }
 
-/**
- * The code that runs during plugin removal.
- * This action is documented in includes/class-mathnews-core-uninstaller.php
- */
-function uninstall_mathnews_core() {
-  require_once plugin_dir_path( __FILE__ ) . 'includes/class-mathnews-core-uninstaller.php';
-  Uninstaller::uninstall();
-}
-
 register_activation_hook( __FILE__, __NAMESPACE__ . '\\activate_mathnews_core' );
 register_deactivation_hook( __FILE__, __NAMESPACE__ . '\\deactivate_mathnews_core' );
-register_uninstall_hook(__FILE__, __NAMESPACE__ . '\\uninstall_mathnews_core');
 
 /**
  * The core plugin class that is used to define internationalization,
@@ -96,6 +86,12 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-mathnews-core.php';
 function run_mathnews_core() {
 
 	add_action('plugins_loaded', function() {
+		// Do upgrades
+		if (VERSION !== get_site_option('mn_core_version') && is_admin()) {
+			Utils::require_core('class-mathnews-core-activator.php');
+			Activator::activate();
+		}
+
 		/**
 		 * Allow dependent plugins to load
 		 *

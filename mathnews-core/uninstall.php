@@ -29,3 +29,11 @@
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
+
+global $wpdb;
+
+// Remove created options
+delete_site_option('mn_core_version');
+
+// Remove created tables
+$wpdb->query("DROP TABLE {$wpdb->prefix}mn_audit_log");

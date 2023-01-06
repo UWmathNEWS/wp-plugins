@@ -16,12 +16,13 @@ namespace Mathnews\WP\Core;
  *
  * This class defines all code necessary to run during the plugin's activation.
  *
+ * WARNING: Code here may be executed in an untrusted context, by untrusted users. Do NOT rely on user input.
+ *
  * @since      1.0.0
  * @package    Mathnews\WP\Core
  * @author     mathNEWS Editors <mathnews@gmail.com>
  */
 class Activator {
-
 	/**
 	 * Activate the plugin.
 	 *
@@ -31,7 +32,6 @@ class Activator {
 	 */
 	public static function activate() {
 		self::upgrade(VERSION, get_site_option('mn_core_version'), false);
-		self::upgrade_db(DB_VERSION, get_site_option('mn_core_db_version'), false);
 
 		self::init_schedulers();
 	}
@@ -69,46 +69,50 @@ class Activator {
 	 * @since 1.4.0
 	 */
 	private static function upgrade(string $new_version, string $old_version, bool $dry_run = true) {
+		if ($new_version === $old_version) return;
+
+		$old_version = $old_version ?? '0.0.0';
+
+		$new_version_major = strtok($new_version, '.');
+		$new_version_minor = strtok('.');
+		$new_version_patch = strtok('.-');
+		$new_version_suffix = strtok('');
+		$old_version_major = strtok($old_version, '.');
+		$old_version_minor = strtok('.');
+		$old_version_patch = strtok('.-');
+		$old_version_suffix = strtok('');
+
+		// nested map of major/minor/patch versions to upgrade function key
+		$upgrades = [
+			1 => [
+				4 => [
+					0 => '140',
+				],
+			],
+		];
+
+		// perform upgrades between the previous version and this one
+		foreach ($upgrades as $i => $major_upgrades) {
+			if ($i < $old_version_major) continue;
+			foreach ($major_upgrades as $j => $minor_upgrades) {
+				if ($i <= $old_version_major && $j < $old_version_minor) continue;
+				foreach ($minor_upgrades as $k => $patch_upgrade) {
+					if ($i <= $old_version_major && $j <= $old_version_minor) {
+						if ($k < $old_version_patch || (empty($old_version_suffix) && empty($new_version_suffix))) continue;
+					}
+
+					$method_name = "upgrade_$patch_upgrade";
+					self::$method_name($dry_run);
+
+					if ($i >= $new_version_major && $j >= $new_version_minor && $k >= $new_version_patch) break;
+				}
+			}
+		}
+
 		if ($dry_run) return;
 
 		// Update saved version
-		if (get_site_option('mn_core_version') === null) {
-			add_site_option('mn_core_version', $new_version);
-		} else {
-			update_site_option('mn_core_version', $new_version);
-		}
-	}
-
-	/**
-	 * Upgrade from one DB version to another.
-	 *
-	 * @param string $new_version The version we are upgrading to
-	 * @param string $old_version The version we are upgrading from
-	 * @param bool $dry_run Perform a dry run of the upgrade, without actually doing anything
-	 *
-	 * @since 1.4.0
-	 */
-	private static function upgrade_db(int $new_version, int $old_version, bool $dry_run = true) {
-		if ($new_version === $old_version) return;
-
-		$old_version = intval($old_version);
-		$new_version = intval($new_version);
-
-		// Iteratively call upgrade functions
-		for ($i = $old_version + 1; $i <= $new_version; $i++) {
-			$method_name = "upgrade_db_$i";
-
-			self::$method_name($dry_run);
-		}
-
-		if ($dry_run) return;
-
-		// Update saved DB version
-		if (get_site_option('mn_core_db_version') === null) {
-			add_site_option('mn_core_db_version', $new_version);
-		} else {
-			update_site_option('mn_core_db_version', $new_version);
-		}
+		update_site_option('mn_core_version', $new_version);
 	}
 
 	/**
@@ -135,12 +139,15 @@ class Activator {
 	}
 
 	/**
-	 * Create a table for the audit log.
+	 * Upgrade to plugin version 1.4.0.
 	 *
 	 * @since 1.4.0
 	 */
-	private static function upgrade_db_1(bool $dry_run = true) {
-		self::db_delta("CREATE TABLE mn_audit_log (
+	private static function upgrade_140(bool $dry_run = true) {
+		global $wpdb;
+
+		// Create a table for the audit log
+		self::db_delta("CREATE TABLE {$wpdb->prefix}mn_audit_log (
 			log_id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			log_time datetime NOT NULL,
 			log_action varchar(40) NOT NULL,
@@ -153,5 +160,39 @@ class Activator {
 			KEY log_actor_id (log_actor_id),
 			KEY log_target_id (log_target_id)
 		) %charset%;", $dry_run);
+
+		// Change post.update.status audit messages to post.update, from previous alphas
+		$entries = $wpdb->get_results("SELECT log_id, log_message FROM {$wpdb->prefix}mn_audit_log WHERE log_action = 'post.update.status'");
+		$result = [];
+
+		foreach ($entries as $entry) {
+			$message = json_decode($entry->log_message);
+			$new_message = [
+				'deltas' => [
+					'status' => [
+						'old' => $message->old_status,
+						'new' => $message->new_status,
+					],
+				],
+			];
+
+			if ($dry_run) {
+				$result[$entry->log_id] = $new_message;
+			} else {
+				$wpdb->query($wpdb->prepare(
+					"UPDATE {$wpdb->prefix}mn_audit_log SET log_action = 'post.update', log_message = %s WHERE log_id = %d",
+					json_encode($new_message), $entry->log_id
+				));
+			}
+		}
+
+		// Clean up obsolete option from previous alphas
+		if (!$dry_run) {
+			delete_site_option('mn_core_db_version');
+		}
+
+		if ($dry_run) {
+			trigger_error(var_dump($result), E_USER_ERROR);
+		}
 	}
 }
