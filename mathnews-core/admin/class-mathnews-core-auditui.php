@@ -105,12 +105,6 @@ class AuditUI {
 					'</li>',
 				]
 			],
-			'post.update.status' => [
-				'updated <a :href="`' . site_url() . '/?p=${log_target_id}&preview=true`">{{post_title}}</a>',
-				[
-					'<li>Changed status from <strong>{{log_message.old_status}}</strong> to <strong>{{log_message.new_status}}</strong></li>',
-				]
-			],
 			'page.create' => [
 				'created page <a :href="`' . site_url() . '/?p=${log_target_id}&preview=true`">{{post_title}}</a>',
 				[

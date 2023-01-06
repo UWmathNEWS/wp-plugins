@@ -35,6 +35,13 @@ class UI {
 
 		// Show pseudonym instead of display name
 		add_filter('the_author', array($this, 'show_pseudonym_as_author'));
+
+		// restrict contributors from quick-editing posts
+		add_filter('quick_edit_show_taxonomy', array($this, 'remove_categories_from_quickedit'), 10, 3);
+		add_filter('post_row_actions', array($this, 'modify_post_row_actions'), 10, 2);
+
+		// Link to user's posts in users list table
+		add_filter('user_row_actions', array($this, 'modify_user_row_actions'), 10, 2);
 	}
 
 	/**
@@ -140,6 +147,48 @@ class UI {
 		// echo here will output text without wrapping it in a link to all of the author's posts, to preserve privacy
 		echo esc_html($nickname);
 		return null;
+	}
+
+	/**
+	 * Prevent categories from showing in quick edit for non-editors
+	 *
+	 * @since 1.0.0
+	 * @uses quick_edit_show_taxonomy
+	 */
+	public function remove_categories_from_quickedit($show, $taxonomy_name, $post_type) {
+		if (!current_user_can('edit_others_posts') && in_array($taxonomy_name, ['category', '_status'])) {
+			return false;
+		}
+
+		return $show;
+	}
+
+	/**
+	 * Prevent users from trashing articles they've submitted
+	 *
+	 * @since 1.0.0
+	 * @uses post_row_actions
+	 */
+	public function modify_post_row_actions($actions, $post) {
+		if (!Utils::can_edit($post)) {
+			unset($actions['inline hide-if-no-js']);
+			unset($actions['trash']);
+		}
+
+		return $actions;
+	}
+
+	/**
+	 * Link to a user's posts in admin instead of their published posts (which shouldn't exist).
+	 *
+	 * @since 1.4.0
+	 * @uses user_row_actions
+	 */
+	public function modify_user_row_actions($actions, $user) {
+		$posts_url = esc_url(add_query_arg(['post_type' => 'post', 'author' => $user->ID], admin_url('edit.php')));
+		$actions['view'] = "<a href='$posts_url'>View posts</a>";
+
+		return $actions;
 	}
 
 	/**

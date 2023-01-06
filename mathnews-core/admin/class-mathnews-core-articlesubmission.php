@@ -39,10 +39,6 @@ class ArticleSubmission {
 		add_action('admin_footer-post.php', array($this, 'show_editor_lock_warning'));
 		add_filter('tiny_mce_before_init', array($this, 'lock_tinymce'));
 		add_filter('teeny_mce_before_init', array($this, 'lock_tinymce'));
-
-		// restrict contributors from quick-editing posts
-		add_filter('quick_edit_show_taxonomy', array($this, 'remove_categories_from_quickedit'), 10, 3);
-		add_filter('post_row_actions', array($this, 'modify_post_row_actions'), 10, 2);
 	}
 
 	/**
@@ -194,35 +190,6 @@ class ArticleSubmission {
 		}
 
 		return $mceInit;
-	}
-
-	/**
-	 * Prevent categories from showing in quick edit for non-editors
-	 *
-	 * @since 1.0.0
-	 * @uses quick_edit_show_taxonomy
-	 */
-	public function remove_categories_from_quickedit($show, $taxonomy_name, $post_type) {
-		if (!current_user_can('edit_others_posts') && in_array($taxonomy_name, ['category', '_status'])) {
-			return false;
-		}
-
-		return $show;
-	}
-
-	/**
-	 * Prevent users from trashing articles they've submitted
-	 *
-	 * @since 1.0.0
-	 * @uses post_row_actions
-	 */
-	public function modify_post_row_actions($actions, $post) {
-		if (!Utils::can_edit($post)) {
-			unset($actions['inline hide-if-no-js']);
-			unset($actions['trash']);
-		}
-
-		return $actions;
 	}
 
 	/**
