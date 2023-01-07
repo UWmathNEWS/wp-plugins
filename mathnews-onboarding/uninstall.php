@@ -25,7 +25,18 @@
  * @package    Mathnews\WP\Onboarding
  */
 
+namespace Mathnews\WP\Onboarding;
+
 // If uninstall not called from WordPress, then exit.
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
+
+delete_option('mn_temp_modal_show');
+delete_option('mn_temp_modal_title');
+delete_option('mn_temp_modal_text');
+delete_option('mn_temp_modal_attachTo');
+delete_option('mn_temp_modal_buttonText');
+delete_option('mn_temp_modal_autohide');
+delete_option('mn_temp_modal_show');
+delete_option('mn_helpful_links_show_onboarding');
