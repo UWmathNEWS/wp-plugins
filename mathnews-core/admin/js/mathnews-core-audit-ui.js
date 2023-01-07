@@ -85,7 +85,10 @@
 
 	const Entry = (props) => ({
 		...props.entry,
-		$template: '#mn-audit-log-entry'
+		$template: '#mn-audit-log-entry',
+		get log_action_stem() {
+			return `${this.log_unit}.${this.log_verb}`;
+		},
 	});
 
 	createApp({

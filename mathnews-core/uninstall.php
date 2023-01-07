@@ -25,15 +25,32 @@
  * @package    Mathnews_Core
  */
 
+namespace Mathnews\WP\Core;
+
 // If uninstall not called from WordPress, then exit.
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
 
+require_once __DIR__ . 'includes/mathnews-core-consts.php';
+
 global $wpdb;
 
 // Remove created options
 delete_site_option('mn_core_version');
+
+delete_option(Consts\CURRENT_ISSUE_OPTION_NAME);
+delete_option(Consts\HELPFUL_LINKS_OPTION_NAME);
+delete_option('mn_admin_notice_text');
+delete_option('mn_admin_notice_type');
+delete_option('mn_audit_persist_days');
+delete_option('mn_email_smtp_use');
+delete_option('mn_email_smtp_config__from');
+delete_option('mn_email_smtp_config__host');
+delete_option('mn_email_smtp_config__password');
+delete_option('mn_email_smtp_config__port');
+delete_option('mn_email_smtp_config__username');
+delete_option('mn_usertesting_enable');
 
 // Remove created tables
 $wpdb->query("DROP TABLE {$wpdb->prefix}mn_audit_log");

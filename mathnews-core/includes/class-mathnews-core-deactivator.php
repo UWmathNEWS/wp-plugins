@@ -24,13 +24,13 @@ class Deactivator {
 
 	/**
 	 * Deactivate the plugin.
-   *
-   * Clears scheduled actions.
+	 *
+	 * Clears scheduled actions.
 	 *
 	 * @since    1.0.0
 	 */
 	public static function deactivate() {
-    wp_clear_scheduled_hook('mn_audit_clear_entries');
+		wp_clear_scheduled_hook('mn_audit_clear_entries');
 	}
 
 }

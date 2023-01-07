@@ -58,7 +58,7 @@ class AuditUI {
 				]
 			],
 			'post.approve' => [
-				'approved <a :href="`' . site_url() . '/?p=${log_target_id}&preview=true`">{{post_title}}</a>',
+				'approved <a :href="`' . site_url() . '/?p=${log_target_id}&preview=true`" target="_blank">{{post_title}}</a>',
 				[
 					'<li v-if="log_message.deltas?.tags">',
 					'	<div v-if="log_message.deltas.tags.removed.length">Removed tags ',
@@ -71,7 +71,7 @@ class AuditUI {
 				]
 			],
 			'post.reject' => [
-				'rejected <a :href="`' . site_url() . '/?p=${log_target_id}&preview=true`">{{post_title}}</a>',
+				'rejected <a :href="`' . site_url() . '/?p=${log_target_id}&preview=true`" target="_blank">{{post_title}}</a>',
 				[
 					'<li>Gave rationale <code>{{log_message.rationale}}</code></li>',
 					'<li v-if="log_message.notified">Notified author of rejection</li>',
@@ -91,7 +91,7 @@ class AuditUI {
 				[]
 			],
 			'post.update' => [
-				'updated <a :href="`' . site_url() . '/?p=${log_target_id}&preview=true`">{{post_title}}</a>',
+				'updated <a :href="`' . site_url() . '/?p=${log_target_id}&preview=true`" target="_blank">{{post_title}}</a>',
 				[
 					'<li v-for="(delta, field) in log_message.deltas">',
 					'	<span v-if="delta.old && delta.new">Changed {{field}} from <strong>{{delta.old}}</strong> to <strong>{{delta.new}}</strong></span>',
@@ -106,7 +106,7 @@ class AuditUI {
 				]
 			],
 			'page.create' => [
-				'created page <a :href="`' . site_url() . '/?p=${log_target_id}&preview=true`">{{post_title}}</a>',
+				'created page <strong>{{post_title}}</strong>',
 				[
 					'<li v-for="(delta, field) in log_message.deltas">',
 					'	<span v-if="delta.new">Set {{field}} to <strong>{{delta.new}}</strong></span>',
@@ -121,7 +121,7 @@ class AuditUI {
 				[]
 			],
 			'page.update' => [
-				'updated page <a :href="`' . site_url() . '/?p=${log_target_id}&preview=true`">{{post_title}}</a>',
+				'updated page <strong>{{post_title}}</strong>',
 				[
 					'<li v-for="(delta, field) in log_message.deltas">',
 					'	<span v-if="delta.old && delta.new">Changed {{field}} from <strong>{{delta.old}}</strong> to <strong>{{delta.new}}</strong></span>',
@@ -204,12 +204,7 @@ class AuditUI {
 	public function handle_ajax() {
 		check_ajax_referer('mn-audit-ui');
 
-		if (!current_user_can('manage_options')) {
-			wp_send_json_error();
-		}
-
-		if (isset($_GET)) {
-			// TODO: write get handlers here, e.g. filter by actor or getting a specific log
+		if (current_user_can('manage_options') && isset($_GET)) {
 			wp_send_json_success($this->get_log_entries($this->get_search_filters()));
 		}
 
@@ -335,8 +330,7 @@ class AuditUI {
 				v-for="entry in store.data.entries"
 				v-scope="Entry({ entry })"
 				:key="entry.log_id"
-				class="mn-audit-log-entry"
-				:data-action="entry.log_action.split('.').join(' ')"></div>
+				class="mn-audit-log-entry"></div>
 			<div v-if="store.data.entries.length === 0" class="mn-audit-log-entry mn-audit-log-empty hide-if-no-js">No results found.</div>
 			<button v-if="store.data.more" @click="store.loadMore()" :disabled="store.loadingMore" class="button widefat hide-if-no-js">
 				{{store.loadingMore ? 'Loading&hellip;' : 'Load More'}}
@@ -345,9 +339,9 @@ class AuditUI {
 		</div>
 
 		<template id="mn-audit-log-entry">
-			<details>
+			<details :data-filter="log_action_stem">
 				<summary class="log-entry-summary">
-					<span class="log-entry-icon">
+					<span class="log-entry-icon" :title="store.filtersMap[log_action_stem]" aria-hidden="true">
 						<span :class="['unit', 'dashicons', `dashicons-${store.icons[log_unit]}`]"></span>
 						<span :class="['verb', 'dashicons', `dashicons-${store.icons[log_verb]}`]"></span>
 					</span>
@@ -362,7 +356,7 @@ class AuditUI {
 						</p>
 						<time :datetime="log_time" class="small">{{new Date(log_time).toLocaleString()}}</time>
 					</div>
-					<span class="log-entry-toggle dashicons dashicons-arrow-right-alt2"></span>
+					<span class="log-entry-toggle dashicons dashicons-arrow-down-alt2" aria-hidden="true"></span>
 				</summary>
 				<div class="log-entry-details">
 					<?php
@@ -374,7 +368,18 @@ class AuditUI {
 						echo '</ol>';
 					}
 					?>
-					<span class="small">Event #{{log_id}} &bull; {{log_action}}</span>
+					<div class="small">
+						Event #{{log_id}} &bull;
+						<a
+							class="log-entry-filter"
+							href=""
+							:title="`Filter similar entries to ${store.filtersMap[log_action_stem]}`"
+							:aria-label="`Filter similar entries to ${store.filtersMap[log_action_stem]}`"
+							@click.prevent="store.updateFilters('log_action', log_action_stem)"
+						>
+							{{log_action}}
+						</a>
+					</div>
 				</div>
 			</details>
 		</template>

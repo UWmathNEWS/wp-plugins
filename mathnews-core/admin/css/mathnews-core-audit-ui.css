@@ -43,22 +43,28 @@
 	margin: 0.5em 0;
 }
 
-[data-action~="approve"],
-[data-action~="create"] {
+[data-filter$="approve"],
+[data-filter$="create"] {
 	--verb-clr: #06a622;
 }
 
-[data-action~="reject"],
-[data-action~="delete"] {
+[data-filter$="reject"],
+[data-filter$="delete"] {
 	--verb-clr: #cc0000;
 }
 
-[data-action~="update"] {
+[data-filter$="update"] {
 	--verb-clr: #dbb902;
 }
 
 .mn-audit-log-entry summary {
 	list-style-type: none;
+	cursor: pointer;
+}
+
+.mn-audit-log-entry summary::marker,
+.mn-audit-log-entry summary::-webkit-details-marker {
+	display: none;
 }
 
 .mn-audit-log-entry details[open] summary {
@@ -105,7 +111,7 @@
 }
 
 .mn-audit-log-entry .log-entry-heading a:hover {
-	text-decoration: underline;
+	opacity: 0.7;
 }
 
 .mn-audit-log-entry details[open] .log-entry-heading p {
@@ -117,7 +123,7 @@
 }
 
 .mn-audit-log-entry details[open] .log-entry-toggle {
-	transform: rotate(90deg);
+	transform: rotate(180deg);
 }
 
 .mn-audit-log-entry .small {
@@ -138,6 +144,15 @@
 
 .mn-audit-log-entry code {
 	font-size: 0.9em;
+}
+
+.mn-audit-log-entry .log-entry-filter {
+	color: inherit;
+	text-decoration: none;
+}
+
+.mn-audit-log-entry .log-entry-filter:hover {
+	text-decoration: underline;
 }
 
 .mn-audit-log-empty {
