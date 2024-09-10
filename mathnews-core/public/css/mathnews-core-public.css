@@ -27,4 +27,5 @@ article.status-draft .entry-content h4,
 article.status-draft .entry-content h5,
 article.status-draft .entry-content h6 {
   font-size: 1em;
+  text-transform: uppercase;
 }
