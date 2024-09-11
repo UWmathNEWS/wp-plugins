@@ -19,7 +19,7 @@
   font-size: 0.8em;
 }
 
-/* set heading sized of draft previews */
+/* === draft previews === */
 article.status-draft .entry-content h1,
 article.status-draft .entry-content h2,
 article.status-draft .entry-content h3,
@@ -28,4 +28,32 @@ article.status-draft .entry-content h5,
 article.status-draft .entry-content h6 {
   font-size: 1em;
   text-transform: uppercase;
+}
+
+article.status-draft .entry-title,
+article.status-draft .entry-subtitle {
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+article.status-draft .entry-header {
+  padding-bottom: 0;
+}
+
+article.status-draft .entry-title {
+  font-size: 1.7em;
+}
+
+article.status-draft .entry-subtitle {
+  font-size: 1.1em;
+}
+
+article.status-draft .entry-meta {
+  display: none;
+}
+
+article.status-draft .entry-pseudonym {
+  font-style: normal;
+  font-weight: bold;
 }
