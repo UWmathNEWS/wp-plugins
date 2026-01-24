@@ -124,7 +124,7 @@ class UI {
 		global $post;
 		$nickname = get_post_meta($post->ID, Consts\AUTHOR_META_KEY_NAME, true) ?: $display_name;
 
-                // WP 6.8.0 introduced changes to WP_Posts_List_Table::column_author that invalidate the previous hack
+		// WP 6.8.0 introduced changes to WP_Posts_List_Table::column_author that invalidate the previous hack
 		if (version_compare($wp_version, '6.8.0', '<')) {
 			return $this->show_pseudonym_as_author__pre6_8_0($display_name, $post, $nickname);
 		}
