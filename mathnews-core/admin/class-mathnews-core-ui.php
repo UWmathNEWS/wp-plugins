@@ -120,9 +120,46 @@ class UI {
 	 * @uses the_author
 	 */
 	public function show_pseudonym_as_author($display_name) {
+		global $wp_version;
 		global $post;
 		$nickname = get_post_meta($post->ID, Consts\AUTHOR_META_KEY_NAME, true) ?: $display_name;
 
+                // WP 6.8.0 introduced changes to WP_Posts_List_Table::column_author that invalidate the previous hack
+		if (version_compare($wp_version, '6.8.0', '<')) {
+			return $this->show_pseudonym_as_author__pre6_8_0($display_name, $post, $nickname);
+		}
+		return $this->show_pseudonym_as_author__current($display_name, $post, $nickname);
+	}
+
+	private function show_pseudonym_as_author__current($display_name, $post, $nickname) {
+		$url = esc_url(add_query_arg([ 'post_type' => $post->post_type, 'author' => get_the_author_meta('ID') ], 'edit.php'));
+
+		if (current_user_can('manage_options')) {
+			$cur_tag = Utils::get_current_tag();
+			$count = count(get_posts([
+				'numberposts' => -1,
+				'post_status' => 'any',
+				'author' => $post->post_author,
+				'tag' => $cur_tag,
+			]));
+
+			$html = '<details>';
+			$html .= '<summary><em>' . $display_name . ' (' . esc_html($count) . ')</em></summary>';
+			$html .= '<a href="' . get_edit_user_link($post->post_author) . '">Edit user profile</a>';
+			$html .= '</details>';
+
+			echo '<a href="' . $url . '">' . esc_html($nickname) . '</a>' . $html;
+		} elseif (current_user_can('edit_others_posts') || $post->post_author == get_current_user_id()) {
+			echo '<a href="' . $url . '">' . esc_html($nickname) . ' <em>(' . $display_name . ')</em></a>';
+		} else {
+			// user doesn't have editing privileges, so we only show the pseudonym.
+			echo esc_html($nickname);
+		}
+
+		return null;
+	}
+
+	private function show_pseudonym_as_author__pre6_8_0($display_name, $post, $nickname) {
 		if (current_user_can('manage_options')) {
 			$cur_tag = Utils::get_current_tag();
 			$count = count(get_posts([
