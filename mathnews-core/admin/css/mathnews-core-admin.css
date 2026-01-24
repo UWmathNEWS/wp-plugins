@@ -84,3 +84,8 @@ input#mn-author {
 .tag--current-issue {
 	background-color: #ffc2de;
 }
+
+/* Hide extraneous fallback text in author column of the post list table (WP >=6.8.0) */
+.column-author span[aria-hidden="true"], .column-author .screen-reader-text {
+	display: none;
+}

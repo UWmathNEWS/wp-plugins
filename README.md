@@ -27,7 +27,14 @@ See installation instructions for each individual plugin.
 
 ## Development
 
-See development instructions for each individual plugin.
+To setup the dev environment, you must have Docker, NodeJS, and git installed.
+You can find instructions in the documentation for the [@wordpress/env](https://www.npmjs.com/package/@wordpress/env) npm package.
+
+1. Run `npm install` to install all dependencies
+2. Run `npx wp-env start` to start the WordPress container
+
+A dev server will start at `localhost:8888`; the default login is `admin` with password `password`.
+For further instructions, see development instructions for each individual plugin.
 
 ## Licensing
 
