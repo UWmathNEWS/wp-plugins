@@ -77,6 +77,7 @@ class UI {
 				'post_type' => 'post',
 				'orderby' => 'date',
 				'order' => 'desc',
+        'tag' => Utils::get_current_tag(),
 			], admin_url('edit.php')),
 			'', 1);
 	}
