@@ -78,6 +78,7 @@ class UI {
 				'orderby' => 'date',
 				'order' => 'desc',
         'tag' => Utils::get_current_tag(),
+				'category_name' => 'uncategorized',
 			], admin_url('edit.php')),
 			'', 1);
 	}
